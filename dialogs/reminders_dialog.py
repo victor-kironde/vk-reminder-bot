@@ -147,6 +147,7 @@ class RemindersDialog(ComponentDialog):
     ) -> DialogTurnResult:
         # Set the Users time.
         reminder: Reminder = step_context.values[self.REMINDER]
+        reminder.time = step_context.result[0].value
         result = step_context.result
         prompt_options = PromptOptions(
             prompt=MessageFactory.text(f"""I've set the reminder, {reminder.title} at {reminder.time}.
