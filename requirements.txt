@@ -1,3 +1,4 @@
+--find-links wheelhouse
 aiohttp==3.6.2
 botbuilder_schema==4.7.1
 botbuilder==0.0.1
