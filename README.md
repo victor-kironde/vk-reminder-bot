@@ -12,7 +12,7 @@
 - Run `python app.py`
 
 ## Running the Bot Online
-- You can test the bot online [here](#).
+- You can test the bot online [here](https://vk-reminder-bot-app.azurewebsites.net).
 
 
 ## Running the bot using Bot Framework Emulator
