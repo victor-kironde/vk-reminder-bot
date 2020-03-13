@@ -180,20 +180,14 @@ class RemindersDialog(ComponentDialog):
     async def interrupt(self, inner_dc: DialogContext) -> DialogTurnResult:
         if inner_dc.context.activity.type == ActivityTypes.message:
             text = inner_dc.context.activity.text.lower()
+            card_path = os.path.join(os.getcwd(), "resources/help_card.json")
+            with open(card_path, "rb") as in_file:
+                card_data = json.load(in_file)
 
-            help_message_text = f"""Commands\n
-Set Reminder: Sets a new reminder\n
-Show Reminder: Shows existing reminder\n
-Help: Displays this help text\n
-Cancel: Cancels a dialog.\n"""
-
-            help_message = MessageFactory.text(
-                help_message_text, help_message_text, InputHints.expecting_input
-            )
+            message = Activity(type=ActivityTypes.message, attachments=[CardFactory.adaptive_card(card_data)])
 
             if text in ("help", "?"):
-                await inner_dc.context.send_activity(help_message)
-
+                await inner_dc.context.send_activity(message)
                 return DialogTurnResult(DialogTurnStatus.Waiting)
 
             cancel_message_text = "Cancelled."
