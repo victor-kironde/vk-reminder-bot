@@ -114,21 +114,19 @@ class RemindersDialog(ComponentDialog):
             return await step_context.prompt(TextPrompt.__name__, prompt_options)
 
         elif action == "Show Reminders":
-            reminder = step_context.values[self.REMINDER]
+            # reminder = step_context.values[self.REMINDER]
             store_items = await self.storage.read(["ReminderLog"])
             reminder_list = store_items["ReminderLog"]["reminder_list"]
-            if reminder:
-                await step_context.context.send_activity(reminder)
-                reminder_list.append(reminder.__dict__)
-            else:
-                await step_context.context.send_activity(MessageFactory.text("Nothing"))
             message = MessageFactory.list(reminder_list)
-            return await step_context.context.send_activity(message)
+            for reminder in reminder_list:
+
+
+                await step_context.context.send_activity(f"{reminder['title']} at {reminder['time']}")
+            return await step_context.end_dialog()
 
         elif action == "Exit":
             await step_context.context.send_activity(MessageFactory.text("Bye!"))
             return await step_context.cancel_all_dialogs()
-        return await step_context.continue_dialog()
 
 
     async def time_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
@@ -145,7 +143,6 @@ class RemindersDialog(ComponentDialog):
     async def confirm_step(
         self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
-        # Set the Users time.
         reminder: Reminder = step_context.values[self.REMINDER]
         reminder.time = step_context.result[0].value
         result = step_context.result
@@ -156,38 +153,12 @@ class RemindersDialog(ComponentDialog):
         return await step_context.prompt(ConfirmPrompt.__name__, prompt_options)
 
     async def acknowledgement_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
-        # Set the user's name to what they entered in response to the name prompt.
-        reminder = step_context.values[self.REMINDER]
+        await self._save_reminder(step_context)
         if step_context.result:
-            await step_context.context.send_activity(MessageFactory.text("okay..."))
+            await step_context.context.send_activity(MessageFactory.text("okay"))
             return await step_context.begin_dialog(self.id)
         else:
-
-            await step_context.context.send_activity(MessageFactory.text("Okay Bye."))
-            return await step_context.end_dialog()
-        store_items = await self.storage.read(["ReminderLog"])
-
-        if "ReminderLog" not in store_items:
-            print("ReminderLog Missing")
-            print(reminder)
-            reminder_log = ReminderLog()
-            reminder_log.reminder_list.append(reminder.__dict__)
-            reminder_log.turn_number = 1
-        else:
-            reminder_log: ReminderLog = store_items["ReminderLog"]
-            reminder_log.reminder_list.append(reminder.__dict__)
-            reminder_log.turn_number = reminder_log.turn_number + 1
-
-        await step_context.context.send_activity(f"\n{reminder_log.turn_number}: "
-                                            f"The list is now: {reminder_log.reminder_list}")
-
-        try:
-            changes = {"ReminderLog": reminder_log}
-            await self.storage.write(changes)
-            await step_context.context.send_activity(await self.storage.read(["ReminderLog"]))
-        except Exception as exception:
-            await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
-
+            await step_context.context.send_activity(MessageFactory.text("Okay, bye!."))
         return await step_context.end_dialog()
 
 
@@ -227,3 +198,24 @@ class RemindersDialog(ComponentDialog):
                 return await inner_dc.cancel_all_dialogs()
 
         return None
+
+
+    async def _save_reminder(self, step_context):
+        reminder = step_context.values[self.REMINDER]
+        store_items = await self.storage.read(["ReminderLog"])
+        if "ReminderLog" not in store_items:
+            print("ReminderLog Missing")
+            print(reminder)
+            reminder_log = ReminderLog()
+            reminder_log.reminder_list.append(reminder.__dict__)
+            reminder_log.turn_number = 1
+        else:
+            reminder_log: ReminderLog = store_items["ReminderLog"]
+            print("STORE ITEMS:_>", reminder_log)
+            reminder_log['reminder_list'].append(reminder.__dict__)
+            reminder_log['turn_number'] = reminder_log['turn_number'] + 1
+        try:
+            changes = {"ReminderLog": reminder_log}
+            await self.storage.write(changes)
+        except Exception as exception:
+            await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
