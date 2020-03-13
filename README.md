@@ -25,3 +25,5 @@
 
 - Launch Bot Framework Emulator
 - Enter a Bot URL of `http://localhost:3978/api/messages`
+
+You can view the project board [here](https://trello.com/b/9WHqZss3)
