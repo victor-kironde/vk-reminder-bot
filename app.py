@@ -23,6 +23,7 @@ from botbuilder.core import (
     UserState,
 )
 
+from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
 from dialogs import RemindersDialog
 from bots import ReminderBot
 
@@ -54,7 +55,15 @@ async def on_error(context: TurnContext, error: Exception):
 
 ADAPTER.on_turn_error = on_error
 
-MEMORY = MemoryStorage()
+
+cosmos_config = CosmosDbConfig(
+        endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
+        masterkey=CONFIG.COSMOSDB_KEY,
+        database=CONFIG.COSMOSDB_DATABASE_ID,
+        container=CONFIG.COSMOSDB_CONTAINER_ID
+    )
+
+MEMORY = CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
 DIALOG = RemindersDialog(USER_STATE)
