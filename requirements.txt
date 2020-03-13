@@ -1,5 +1,3 @@
 aiohttp==3.6.2
 botbuilder_schema==4.7.1
-recognizers_text_date_time==1.0.2a2
 botbuilder==0.0.1
-recognizers_date_time==1.0.0a1
