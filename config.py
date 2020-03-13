@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 class DefaultConfig:
-    PORT = 3978
+    PORT = os.environ.get("PORT", "")
     APP_ID = os.environ.get("MicrosoftAppId", "")
     APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "")
 
