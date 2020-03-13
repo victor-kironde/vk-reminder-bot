@@ -1,4 +1,7 @@
---find-links wheelhouse
-aiohttp==3.6.2
-botbuilder_schema==4.7.1
-botbuilder==0.0.1
+aiohttp
+botbuilder-core>=4.7.0
+botbuilder-ai>=4.7.0
+botbuilder_schema >=4.7.1
+botbuilder
+botbuilder-azure
+botbuilder-dialogs
