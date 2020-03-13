@@ -19,10 +19,11 @@ from botbuilder.schema import (
     SuggestedActions,
     ActivityTypes,
     Activity,
-    InputHints, HeroCard, CardImage
+    InputHints, HeroCard, CardImage, Attachment
 )
 
 import json
+import os
 
 from botbuilder.dialogs.choices import Choice
 
@@ -99,33 +100,34 @@ class RemindersDialog(ComponentDialog):
 
         prompt_options = PromptOptions(
             prompt=MessageFactory.text("How may I help you?"),
-            choices=[Choice("Set Reminder"), Choice("Show Reminders"), Choice("Exit")]
+            choices=[Choice("Set Reminder"), Choice("Show All Reminders"), Choice("Exit")]
         )
         return await step_context.prompt(ChoicePrompt.__name__, prompt_options)
 
     async def title_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
-        action = step_context.result.value
+        action = step_context.result.value.lower()
 
-        if action == "Set Reminder":
-            print("set reminder")
+        if action == "set reminder":
             prompt_options = PromptOptions(
                 prompt=MessageFactory.text("What would you like me to remind you about?")
             )
             return await step_context.prompt(TextPrompt.__name__, prompt_options)
 
-        elif action == "Show Reminders":
+        elif action == "show all reminders":
             store_items = await self.storage.read(["ReminderLog"])
             reminder_list = store_items["ReminderLog"]["reminder_list"]
-            message = MessageFactory.list(reminder_list)
             for reminder in reminder_list:
+                message = Activity(
+                type=ActivityTypes.message,
+                attachments=[self._create_adaptive_card_attachment(reminder)],
+                )
 
-
-                await step_context.context.send_activity(f"{reminder['title']} at {reminder['time']}")
+                await step_context.context.send_activity(message)
             return await step_context.end_dialog()
 
-        elif action == "Exit":
+        elif action == "exit":
             await step_context.context.send_activity(MessageFactory.text("Bye!"))
-            return await step_context.cancel_all_dialogs()
+            return await step_context.end_dialog()
 
 
     async def time_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
@@ -146,8 +148,15 @@ class RemindersDialog(ComponentDialog):
         reminder.time = step_context.result[0].value
         result = step_context.result
         prompt_options = PromptOptions(
-            prompt=MessageFactory.text(f"""I've set the reminder, {reminder.title} at {reminder.time}.
-            \nWould you like to do anything else?"""))
+            prompt=MessageFactory.text(f"""I have set the reminder.
+            \nWould you like to do anything else?""")
+            )
+        await step_context.context.send_activity(Activity(
+                type=ActivityTypes.message,
+                text=MessageFactory.text(f"""I have set the reminder.
+            \nWould you like to do anything else?"""),
+                attachments=[self._create_adaptive_card_attachment(reminder.__dict__)],
+            ))
 
         return await step_context.prompt(ConfirmPrompt.__name__, prompt_options)
 
@@ -171,20 +180,14 @@ class RemindersDialog(ComponentDialog):
     async def interrupt(self, inner_dc: DialogContext) -> DialogTurnResult:
         if inner_dc.context.activity.type == ActivityTypes.message:
             text = inner_dc.context.activity.text.lower()
+            card_path = os.path.join(os.getcwd(), "resources/help_card.json")
+            with open(card_path, "rb") as in_file:
+                card_data = json.load(in_file)
 
-            help_message_text = f"""Commands\n
-                                    Set Reminder: Sets a new reminder\n
-                                    Show Reminder: Shows existing reminder\n
-                                    Help: Displays this help text\n
-                                    Cancel: Cancels a dialog.\n"""
-
-            help_message = MessageFactory.text(
-                help_message_text, help_message_text, InputHints.expecting_input
-            )
+            message = Activity(type=ActivityTypes.message, attachments=[CardFactory.adaptive_card(card_data)])
 
             if text in ("help", "?"):
-                await inner_dc.context.send_activity(help_message)
-
+                await inner_dc.context.send_activity(message)
                 return DialogTurnResult(DialogTurnStatus.Waiting)
 
             cancel_message_text = "Cancelled."
@@ -210,7 +213,6 @@ class RemindersDialog(ComponentDialog):
             reminder_log.turn_number = 1
         else:
             reminder_log: ReminderLog = store_items["ReminderLog"]
-            print("STORE ITEMS:_>", reminder_log)
             reminder_log['reminder_list'].append(reminder.__dict__)
             reminder_log['turn_number'] = reminder_log['turn_number'] + 1
         try:
@@ -218,3 +220,14 @@ class RemindersDialog(ComponentDialog):
             await self.storage.write(changes)
         except Exception as exception:
             await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
+
+
+    def _create_adaptive_card_attachment(self, reminder) -> Attachment:
+        card_path = os.path.join(os.getcwd(), "resources/reminder_card.json")
+
+        with open(card_path, "rb") as in_file:
+            card_data = json.load(in_file)
+            card_data["body"][0]["text"] = reminder['title']
+            card_data["body"][1]["text"] = reminder['time']
+
+        return CardFactory.adaptive_card(card_data)

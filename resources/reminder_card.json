@@ -1,0 +1,19 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.0",
+    "type": "AdaptiveCard",
+    "speak": "Your flight is confirmed for you and 3 other passengers from San Francisco to Amsterdam on Friday, October 10 8:30 AM",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "{reminder['title']}",
+            "weight": "bolder",
+            "isSubtle": false
+        },
+        {
+            "type": "TextBlock",
+            "text": "{reminder['time']}",
+            "separator": true
+        }
+    ]
+}
