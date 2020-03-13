@@ -125,7 +125,7 @@ class RemindersDialog(ComponentDialog):
 
         elif action == "Exit":
             await step_context.context.send_activity(MessageFactory.text("Bye!"))
-            return await step_context.cancel_all_dialogs()
+            return await step_context.end_dialog()
 
 
     async def time_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
