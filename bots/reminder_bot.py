@@ -37,3 +37,15 @@ class ReminderBot(ActivityHandler):
         turn_context,
         self.conversation_state.create_property("DialogState"),
         )
+
+    async def on_members_added_activity(self, members_added, turn_context):
+        for member in members_added:
+            if member.id != turn_context.activity.recipient.id:
+                await turn_context.send_activity(
+                    "Hello! I'm VK-Reminder Bot."
+                )
+        return await DialogHelper.run_dialog(
+        self.dialog,
+        turn_context,
+        self.conversation_state.create_property("DialogState"),
+        )

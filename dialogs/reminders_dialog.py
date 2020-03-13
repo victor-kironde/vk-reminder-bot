@@ -187,7 +187,7 @@ class RemindersDialog(ComponentDialog):
 
                 return DialogTurnResult(DialogTurnStatus.Waiting)
 
-            cancel_message_text = "Cancelling"
+            cancel_message_text = "Cancelled."
             cancel_message = MessageFactory.text(
                 cancel_message_text, cancel_message_text, InputHints.ignoring_input
             )
