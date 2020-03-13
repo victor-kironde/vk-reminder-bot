@@ -114,7 +114,6 @@ class RemindersDialog(ComponentDialog):
             return await step_context.prompt(TextPrompt.__name__, prompt_options)
 
         elif action == "Show Reminders":
-            # reminder = step_context.values[self.REMINDER]
             store_items = await self.storage.read(["ReminderLog"])
             reminder_list = store_items["ReminderLog"]["reminder_list"]
             message = MessageFactory.list(reminder_list)
