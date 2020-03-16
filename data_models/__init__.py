@@ -1,3 +1,3 @@
-from .reminder import Reminder
+from .reminder import Reminder, ReminderLog
 
-__all__ = ["Reminder"]
+__all__ = ["Reminder", "ReminderLog"]

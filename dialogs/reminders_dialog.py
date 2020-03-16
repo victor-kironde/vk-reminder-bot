@@ -1,4 +1,4 @@
-from botbuilder.core import MessageFactory, UserState, MemoryStorage, StoreItem, CardFactory
+from botbuilder.core import MessageFactory, UserState, MemoryStorage, CardFactory
 from botbuilder.dialogs import (
     WaterfallDialog,
     DialogTurnResult,
@@ -27,7 +27,7 @@ import os
 
 from botbuilder.dialogs.choices import Choice
 
-from data_models import Reminder
+from data_models import Reminder, ReminderLog
 
 from recognizers_date_time import recognize_datetime, Culture
 from datetime import datetime
@@ -45,26 +45,6 @@ cosmos_config = CosmosDbConfig(
         database=config.COSMOSDB_DATABASE_ID,
         container=config.COSMOSDB_CONTAINER_ID
     )
-
-
-class ValidationResult:
-    def __init__(
-        self, is_valid: bool = False, value: object = None, message: str = None
-    ):
-        self.is_valid = is_valid
-        self.value = value
-        self.message = message
-
-class ReminderLog(StoreItem):
-    """
-    Class for storing a log of reminders (text of messages) as a list.
-    """
-
-    def __init__(self):
-        super(ReminderLog, self).__init__()
-        self.reminder_list = []
-        self.turn_number = 0
-        self.e_tag = "*"
 
 class RemindersDialog(ComponentDialog):
     def __init__(self, user_state: UserState):
