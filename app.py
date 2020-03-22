@@ -1,31 +1,20 @@
 import traceback
 from datetime import datetime
-
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
-from botbuilder.core import (
-    BotFrameworkAdapterSettings,
-    TurnContext,
-    BotFrameworkAdapter,
-)
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
-
 from config import DefaultConfig
-
-
+from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
+from dialogs import RemindersDialog
+from bots import ReminderBot
 from botbuilder.core import (
     BotFrameworkAdapter,
     BotFrameworkAdapterSettings,
     ConversationState,
-    MemoryStorage,
     TurnContext,
     UserState,
 )
-
-from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
-from dialogs import RemindersDialog
-from bots import ReminderBot
 
 CONFIG = DefaultConfig()
 
