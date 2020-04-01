@@ -1,4 +1,4 @@
-{
+HelpCard = {
     "type": "AdaptiveCard",
     "body": [
         {
