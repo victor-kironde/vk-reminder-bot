@@ -3,7 +3,7 @@ from datetime import datetime
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
 from botbuilder.core.integration import aiohttp_error_middleware
-from botbuilder.schema import Activity, ActivityTypes
+from botbuilder.schema import Activity, ActivityTypes, ConversationReference
 from config import DefaultConfig
 from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
 from dialogs import RemindersDialog
@@ -15,6 +15,8 @@ from botbuilder.core import (
     TurnContext,
     UserState,
 )
+
+from typing import Dict
 
 CONFIG = DefaultConfig()
 
@@ -56,9 +58,9 @@ MEMORY = CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
 DIALOG = RemindersDialog(USER_STATE)
+CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
-
-BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG)
+BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, MEMORY)
 
 
 
