@@ -13,31 +13,25 @@ from botbuilder.dialogs.prompts import (
     ChoicePrompt,
     ConfirmPrompt)
 from botbuilder.schema import (
-    ChannelAccount,
-    CardAction,
-    ActionTypes,
-    SuggestedActions,
     ActivityTypes,
     Activity,
-    InputHints, HeroCard, CardImage, Attachment
+    InputHints, Attachment, HeroCard, CardImage, CardAction
 )
 
 import json
 import os
 
 from botbuilder.dialogs.choices import Choice
-
 from data_models import Reminder, ReminderLog
-
-from recognizers_date_time import recognize_datetime, Culture
+# from recognizers_date_time import recognize_datetime, Culture
 from datetime import datetime
-
-
 from config import DefaultConfig
-
 from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
 
+from resources import HelpCard, ReminderCard
+
 config = DefaultConfig()
+
 
 cosmos_config = CosmosDbConfig(
         endpoint=config.COSMOSDB_SERVICE_ENDPOINT,
@@ -62,8 +56,8 @@ class RemindersDialog(ComponentDialog):
             WaterfallDialog(
                 "WFDialog",
                 [
-                    self.action_step,
-                    self.title_step,
+                    self.choice_step,
+                    self.reminder_step,
                     self.time_step,
                     self.confirm_step,
                     self.acknowledgement_step
@@ -75,7 +69,7 @@ class RemindersDialog(ComponentDialog):
         self.initial_dialog_id = "WFDialog"
 
 
-    async def action_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
+    async def choice_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         step_context.values[self.REMINDER] = Reminder()
 
         prompt_options = PromptOptions(
@@ -84,7 +78,7 @@ class RemindersDialog(ComponentDialog):
         )
         return await step_context.prompt(ChoicePrompt.__name__, prompt_options)
 
-    async def title_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
+    async def reminder_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         action = step_context.result.value.lower()
 
         if action == "set reminder":
@@ -97,11 +91,12 @@ class RemindersDialog(ComponentDialog):
             store_items = await self.storage.read(["ReminderLog"])
             reminder_list = store_items["ReminderLog"]["reminder_list"]
             for reminder in reminder_list:
+                ReminderCard["body"][0]["text"] = reminder['title']
+                ReminderCard["body"][1]["text"] = reminder['time']
                 message = Activity(
                 type=ActivityTypes.message,
-                attachments=[self._create_adaptive_card_attachment(reminder)],
+                attachments=[CardFactory.adaptive_card(ReminderCard)],
                 )
-
                 await step_context.context.send_activity(message)
             return await step_context.end_dialog()
 
@@ -131,11 +126,15 @@ class RemindersDialog(ComponentDialog):
             prompt=MessageFactory.text(f"""I have set the reminder.
             \nWould you like to do anything else?""")
             )
+
+        ReminderCard["body"][0]["text"] = reminder.title
+        ReminderCard["body"][1]["text"] = reminder.time
+
         await step_context.context.send_activity(Activity(
                 type=ActivityTypes.message,
                 text=MessageFactory.text(f"""I have set the reminder.
             \nWould you like to do anything else?"""),
-                attachments=[self._create_adaptive_card_attachment(reminder.__dict__)],
+                attachments=[CardFactory.adaptive_card(ReminderCard)],
             ))
 
         return await step_context.prompt(ConfirmPrompt.__name__, prompt_options)
@@ -160,11 +159,8 @@ class RemindersDialog(ComponentDialog):
     async def interrupt(self, inner_dc: DialogContext) -> DialogTurnResult:
         if inner_dc.context.activity.type == ActivityTypes.message:
             text = inner_dc.context.activity.text.lower()
-            card_path = os.path.join(os.getcwd(), "resources/help_card.json")
-            with open(card_path, "rb") as in_file:
-                card_data = json.load(in_file)
-
-            message = Activity(type=ActivityTypes.message, attachments=[CardFactory.adaptive_card(card_data)])
+            message = Activity(type=ActivityTypes.message,
+                                attachments=[CardFactory.adaptive_card(HelpCard)])
 
             if text in ("help", "?"):
                 await inner_dc.context.send_activity(message)
@@ -188,6 +184,7 @@ class RemindersDialog(ComponentDialog):
         if "ReminderLog" not in store_items:
             print("ReminderLog Missing")
             print(reminder)
+            #TODO: save Reminder instead of ReminderLog
             reminder_log = ReminderLog()
             reminder_log.reminder_list.append(reminder.__dict__)
             reminder_log.turn_number = 1
@@ -200,14 +197,3 @@ class RemindersDialog(ComponentDialog):
             await self.storage.write(changes)
         except Exception as exception:
             await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
-
-
-    def _create_adaptive_card_attachment(self, reminder) -> Attachment:
-        card_path = os.path.join(os.getcwd(), "resources/reminder_card.json")
-
-        with open(card_path, "rb") as in_file:
-            card_data = json.load(in_file)
-            card_data["body"][0]["text"] = reminder['title']
-            card_data["body"][1]["text"] = reminder['time']
-
-        return CardFactory.adaptive_card(card_data)
