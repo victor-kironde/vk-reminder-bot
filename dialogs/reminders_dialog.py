@@ -60,7 +60,7 @@ class RemindersDialog(ComponentDialog):
                     self.reminder_step,
                     self.time_step,
                     self.confirm_step,
-                    self.acknowledgement_step
+                    self.save_step
 
                 ],
             )
@@ -132,17 +132,14 @@ class RemindersDialog(ComponentDialog):
 
         await step_context.context.send_activity(Activity(
                 type=ActivityTypes.message,
-                text=MessageFactory.text(f"""I have set the reminder.
-            \nWould you like to do anything else?"""),
                 attachments=[CardFactory.adaptive_card(ReminderCard)],
             ))
 
         return await step_context.prompt(ConfirmPrompt.__name__, prompt_options)
 
-    async def acknowledgement_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
+    async def save_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         await self._save_reminder(step_context)
         if step_context.result:
-            await step_context.context.send_activity(MessageFactory.text("okay"))
             return await step_context.begin_dialog(self.id)
         else:
             await step_context.context.send_activity(MessageFactory.text("Okay, bye!."))
