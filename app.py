@@ -57,7 +57,7 @@ cosmos_config = CosmosDbConfig(
 MEMORY = CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
-DIALOG = RemindersDialog(USER_STATE)
+DIALOG = RemindersDialog(USER_STATE, MEMORY)
 CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
 BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, MEMORY)
