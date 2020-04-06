@@ -1,4 +1,4 @@
-ReminderCard1 = {
+ReminderAudioCard = {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "version": "1.0",
     "type": "AdaptiveCard",
@@ -43,7 +43,7 @@ ReminderCard= {
             "type": "Action.Submit",
             "title": "Done",
             "data": {
-                "x": "snooze"
+                "action": "done"
             },
             "iconUrl": ""
         },
@@ -51,7 +51,7 @@ ReminderCard= {
             "type": "Action.Submit",
             "title": "Delete",
             "data": {
-                "x": "late"
+                "action": "delete"
             }
         }
     ]
