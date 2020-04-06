@@ -194,3 +194,34 @@ class RemindersDialog(ComponentDialog):
             await self.storage.write(changes)
         except Exception as exception:
             await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
+
+    async def _show_reminders(self, turn_context: TurnContext):
+        store_items = await self.storage.read(["ReminderLog"])
+        reminder_list = store_items["ReminderLog"]["reminder_list"]
+        for reminder in reminder_list:
+            ReminderCard["body"][0]["text"] = reminder['title']
+            ReminderCard["body"][1]["text"] = reminder['time']
+            message = Activity(
+            type=ActivityTypes.message,
+            attachments=[CardFactory.adaptive_card(ReminderCard)],
+            )
+            await turn_context.send_activity(message)
+
+    async def _send_suggested_actions(self, turn_context: TurnContext):
+        """
+        Creates and sends an activity with suggested actions to the user. When the user
+        clicks one of the buttons the text value from the "CardAction" will be displayed
+        in the channel just as if the user entered the text. There are multiple
+        "ActionTypes" that may be used for different situations.
+        """
+
+        reply = MessageFactory.text("How can I help you?")
+
+        reply.suggested_actions = SuggestedActions(
+            actions=[
+                CardAction(title="Set Reminder", type=ActionTypes.im_back, value="Set Reminder"),
+                CardAction(title="Show Reminders", type=ActionTypes.im_back, value="Show Reminders"),
+                CardAction(title="Exit", type=ActionTypes.im_back, value="Exit"),
+            ]
+        )
+        return await turn_context.send_activity(reply)
