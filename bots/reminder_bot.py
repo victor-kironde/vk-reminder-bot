@@ -5,14 +5,10 @@ from botbuilder.core import(
     TurnContext,
     MessageFactory)
 from botbuilder.dialogs import Dialog
-from helpers import DialogHelper
-from data_models import Reminder, WelcomeUserState
-import asyncio
-from botbuilder.schema import Activity, ConversationReference
-import time
-import json
-from datetime import datetime
+from helpers import DialogHelper, ReminderHelper
+from data_models import WelcomeUserState
 
+from botbuilder.schema import Activity, ConversationReference
 
 from typing import Dict
 class ReminderBot(ActivityHandler):
@@ -61,7 +57,7 @@ class ReminderBot(ActivityHandler):
 
     async def on_conversation_update_activity(self, turn_context):
         self._add_conversation_reference(turn_context.activity)
-        await self._remind_user(turn_context)
+        await ReminderHelper.remind_user(turn_context, self.storage)
         return await super().on_conversation_update_activity(turn_context)
 
 
@@ -76,7 +72,7 @@ class ReminderBot(ActivityHandler):
                 f"Hello, I'm VK-Reminder-Bot."
             )
             await turn_context.send_activity(
-                f"What is your name?."
+                f"What is your name?"
             )
 
     def _add_conversation_reference(self, activity: Activity):
@@ -90,14 +86,3 @@ class ReminderBot(ActivityHandler):
         self.conversation_references[
             conversation_reference.user.id
         ] = conversation_reference
-
-    async def _remind_user(self, turn_context: TurnContext):
-        while True:
-            now = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
-            store_items = await self.storage.read(["ReminderLog"])
-            reminder_list = store_items["ReminderLog"]["reminder_list"] # get one hour
-            reminders = sorted(list(filter(lambda x: x.time == now, map(lambda x: Reminder(**x), reminder_list))))
-            if len(reminders)>0:
-                for reminder in reminders:
-                    await turn_context.send_activity(MessageFactory.text(reminder))
-            await asyncio.sleep(10)
