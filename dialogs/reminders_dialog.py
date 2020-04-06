@@ -150,8 +150,8 @@ class RemindersDialog(CancelAndHelpDialog):
         store_items =list(self.storage.client.QueryItems("dbs/w1hKAA==/colls/w1hKAJ-o+vY=/","select * from c where CONTAINS(c.id, 'Reminder')"))
         reminder_list = [Unpickler().restore(item["document"]) for item in store_items]
         for reminder in reminder_list:
-            ReminderCard["body"][0]["text"] = reminder.title
-            ReminderCard["body"][1]["text"] = reminder.time
+            ReminderCard["body"][0]["text"] = reminder.title if hasattr(reminder, 'title') else ""
+            ReminderCard["body"][1]["text"] = reminder.time if hasattr(reminder, 'time') else ""
             message = Activity(
             type=ActivityTypes.message,
             attachments=[CardFactory.adaptive_card(ReminderCard)],

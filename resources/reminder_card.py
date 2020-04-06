@@ -23,17 +23,17 @@ ReminderCard= {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
     "version": "1.0",
-    "speak": "<s>Your  meeting about \"Adaptive Card design session\"<break strength='weak'/> is starting at 12:30pm</s><s>Do you want to snooze <break strength='weak'/> or do you want to send a late notification to the attendees?</s>",
+    "id": "",
     "body": [
         {
             "type": "TextBlock",
-            "text": "Adaptive Card design session",
+            "text": "",
             "size": "Large",
             "weight": "Bolder"
         },
         {
             "type": "TextBlock",
-            "text": "12:30 PM - 1:30 PM",
+            "text": "",
             "isSubtle": True,
             "spacing": "None"
         }

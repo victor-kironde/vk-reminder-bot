@@ -4,8 +4,9 @@ from enum import Enum
 from typing import Dict
 from botbuilder.ai.luis import LuisRecognizer
 from botbuilder.core import IntentScore, TopIntent, TurnContext
-
 from data_models import Reminder
+from datetime import datetime
+import time as t
 
 
 class Intent(Enum):
@@ -58,8 +59,14 @@ class LuisHelper:
                     timex = date_entities[0]["timex"]
 
                     if timex:
-                        datetime = timex[0].replace("T", " ")
-                        result.time = datetime
+                        _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
+
+                        now_timestamp = t.time()
+                        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
+                            now_timestamp
+                        )
+                        # result = datetime + offset
+                        result.time = datetime.strftime(_datetime + offset, "%Y-%m-%d %H:%M:%S")
 
                 else:
                     result.time = None
