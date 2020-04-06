@@ -2,15 +2,16 @@ from typing import List
 from botbuilder.core import StoreItem
 from datetime import datetime
 import time
+import uuid
 
 
 class Reminder(StoreItem):
     def __init__(
-        self, title: str = None, time: str = None, done=False, _id=None, type=None):
+        self, title: str = None, time: str = None, done=False, id=None, type=None):
         self.title: str = title
         self.time: str = self._validate_time(time)
         self.type = "Reminder"
-        self._id = ""
+        self.id = "Reminder-" + str(uuid.uuid4())
         self.done = done
 
     def __lt__(self, other):
@@ -18,7 +19,7 @@ class Reminder(StoreItem):
 
     @property
     def datetime(self):
-        return datetime.strptime(self.time, "%Y-%m-%d %H:%M")
+        return datetime.strptime(self.time, "%Y-%m-%d %H:%M:%S")
 
     def _validate_time(self, reminder_time):
         if not reminder_time:

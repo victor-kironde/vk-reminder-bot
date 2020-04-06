@@ -49,6 +49,8 @@ class LuisHelper:
                 )
                 if len(reminder_entities) > 0:
                     result.title = reminder_entities[0]["text"].title()
+                else:
+                    result.title = None
 
                 date_entities = recognizer_result.entities.get("datetime", [])
 
@@ -56,7 +58,7 @@ class LuisHelper:
                     timex = date_entities[0]["timex"]
 
                     if timex:
-                        datetime = timex[0][:timex[0].rfind(":")].replace("T", " ")
+                        datetime = timex[0].replace("T", " ")
                         result.time = datetime
 
                 else:
