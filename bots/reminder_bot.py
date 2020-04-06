@@ -5,7 +5,7 @@ from botbuilder.core import(
     TurnContext,
     MessageFactory)
 from botbuilder.dialogs import Dialog
-from helpers.dialog_helper import DialogHelper
+from helpers import DialogHelper
 from data_models import Reminder, WelcomeUserState
 import asyncio
 from botbuilder.schema import Activity, ConversationReference
