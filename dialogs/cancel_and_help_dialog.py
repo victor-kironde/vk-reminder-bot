@@ -7,8 +7,9 @@ from botbuilder.dialogs import (
     DialogTurnResult,
     DialogTurnStatus,
 )
-from botbuilder.schema import ActivityTypes, InputHints
-from botbuilder.core import MessageFactory
+from botbuilder.schema import Activity, ActivityTypes, InputHints
+from botbuilder.core import MessageFactory, CardFactory
+from resources import HelpCard
 
 
 class CancelAndHelpDialog(ComponentDialog):
@@ -26,21 +27,23 @@ class CancelAndHelpDialog(ComponentDialog):
         if inner_dc.context.activity.type == ActivityTypes.message:
             text = inner_dc.context.activity.text.lower()
 
-            help_message_text = "Show Help..."
-            help_message = MessageFactory.text(
-                help_message_text, help_message_text, InputHints.expecting_input
-            )
+            # help_message_text = "Show Help..."
+            # help_message = MessageFactory.text(
+            #     help_message_text, help_message_text, InputHints.expecting_input
+            # )
+            help_message = Activity(type=ActivityTypes.message,
+                                attachments=[CardFactory.adaptive_card(HelpCard)])
 
             if text in ("help", "?"):
                 await inner_dc.context.send_activity(help_message)
                 return DialogTurnResult(DialogTurnStatus.Waiting)
 
-            cancel_message_text = "Cancelling"
+            cancel_message_text = "Cancelled."
             cancel_message = MessageFactory.text(
                 cancel_message_text, cancel_message_text, InputHints.ignoring_input
             )
 
-            if text in ("cancel", "quit"):
+            if text in ("cancel", "quit", "exit"):
                 await inner_dc.context.send_activity(cancel_message)
                 return await inner_dc.cancel_all_dialogs()
 

@@ -41,14 +41,6 @@ ReminderCard= {
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "Done",
-            "data": {
-                "action": "done"
-            },
-            "iconUrl": ""
-        },
-        {
-            "type": "Action.Submit",
             "title": "Delete",
             "data": {
                 "action": "delete"
