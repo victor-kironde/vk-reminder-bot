@@ -1,6 +1,11 @@
-from botbuilder.core import ActivityHandler, ConversationState, UserState, TurnContext, MessageFactory
+from botbuilder.core import(
+    ActivityHandler,
+    ConversationState,
+    UserState,
+    TurnContext,
+    MessageFactory)
 from botbuilder.dialogs import Dialog
-from helpers.dialog_helper import DialogHelper
+from helpers import DialogHelper
 from data_models import Reminder, WelcomeUserState
 import asyncio
 from botbuilder.schema import Activity, ConversationReference
@@ -43,7 +48,6 @@ class ReminderBot(ActivityHandler):
         await self.user_state.save_changes(turn_context, False)
 
     async def on_message_activity(self, turn_context):
-        await self._welcome_user(turn_context)
         return await DialogHelper.run_dialog(
         self.dialog,
         turn_context,
@@ -54,11 +58,6 @@ class ReminderBot(ActivityHandler):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
                 await self._welcome_user(turn_context)
-        return await DialogHelper.run_dialog(
-        self.dialog,
-        turn_context,
-        self.conversation_state.create_property("DialogState"),
-        )
 
     async def on_conversation_update_activity(self, turn_context):
         self._add_conversation_reference(turn_context.activity)
@@ -74,10 +73,10 @@ class ReminderBot(ActivityHandler):
             welcome_user_state.did_welcome_user = True
             name = turn_context.activity.from_property.name
             await turn_context.send_activity(
-                f"Hello {name}!"
+                f"Hello, I'm VK-Reminder-Bot."
             )
             await turn_context.send_activity(
-                f"I'm VK-Reminder-Bot."
+                f"What is your name?."
             )
 
     def _add_conversation_reference(self, activity: Activity):
@@ -91,7 +90,6 @@ class ReminderBot(ActivityHandler):
         self.conversation_references[
             conversation_reference.user.id
         ] = conversation_reference
-        print(conversation_reference)
 
     async def _remind_user(self, turn_context: TurnContext):
         while True:
@@ -99,6 +97,7 @@ class ReminderBot(ActivityHandler):
             store_items = await self.storage.read(["ReminderLog"])
             reminder_list = store_items["ReminderLog"]["reminder_list"] # get one hour
             reminders = sorted(list(filter(lambda x: x.time == now, map(lambda x: Reminder(**x), reminder_list))))
-            for reminder in reminders:
-                await turn_context.send_activity(MessageFactory.text(reminder))
+            if len(reminders)>0:
+                for reminder in reminders:
+                    await turn_context.send_activity(MessageFactory.text(reminder))
             await asyncio.sleep(10)
