@@ -9,3 +9,6 @@ class DefaultConfig:
     COSMOSDB_KEY = os.environ.get("COSMOSDB_KEY", "")
     COSMOSDB_DATABASE_ID = os.environ.get("COSMOSDB_DATABASE_ID", "")
     COSMOSDB_CONTAINER_ID = os.environ.get("COSMOSDB_CONTAINER_ID", "")
+    LUIS_APP_ID = os.environ.get("LuisAppId", "")
+    LUIS_API_KEY = os.environ.get("LuisAPIKey", "")
+    LUIS_API_HOST_NAME = os.environ.get("LuisAPIHostName", "")
