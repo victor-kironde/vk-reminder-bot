@@ -146,11 +146,11 @@ class RemindersDialog(CancelAndHelpDialog):
             await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
 
     async def _show_reminders(self, turn_context: TurnContext):
-        store_items = await self.storage.read(["ReminderLog"])
-        reminder_list = store_items["ReminderLog"]["reminder_list"]
+        store_items =list(self.storage.client.QueryItems("dbs/w1hKAA==/colls/w1hKAJ-o+vY=/","select * from c where CONTAINS(c.id, 'Reminder')"))
+        reminder_list = [Unpickler().restore(item["document"]) for item in store_items]
         for reminder in reminder_list:
-            ReminderCard["body"][0]["text"] = reminder['title']
-            ReminderCard["body"][1]["text"] = reminder['time']
+            ReminderCard["body"][0]["text"] = reminder.title
+            ReminderCard["body"][1]["text"] = reminder.time
             message = Activity(
             type=ActivityTypes.message,
             attachments=[CardFactory.adaptive_card(ReminderCard)],
