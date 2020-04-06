@@ -32,6 +32,7 @@ from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOp
 from azure.cognitiveservices.language.luis.runtime.models import LuisResult
 from helpers import LuisHelper
 from .cancel_and_help_dialog import CancelAndHelpDialog
+from jsonpickle.unpickler import Unpickler
 config = DefaultConfig()
 
 class RemindersDialog(CancelAndHelpDialog):
