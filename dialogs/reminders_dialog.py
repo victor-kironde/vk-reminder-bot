@@ -140,21 +140,8 @@ class RemindersDialog(CancelAndHelpDialog):
 
     async def _save_reminder(self, step_context):
         reminder = step_context.values[self.REMINDER]
-        store_items = await self.storage.read(["ReminderLog"])
-        if "ReminderLog" not in store_items:
-            print("ReminderLog Missing")
-            print(reminder)
-            #TODO: save Reminder instead of ReminderLog
-            reminder_log = ReminderLog()
-            reminder_log.reminder_list.append(reminder.__dict__)
-            reminder_log.turn_number = 1
-        else:
-            reminder_log: ReminderLog = store_items["ReminderLog"]
-            reminder_log['reminder_list'].append(reminder.__dict__)
-            reminder_log['turn_number'] = reminder_log['turn_number'] + 1
         try:
-            changes = {"ReminderLog": reminder_log}
-            await self.storage.write(changes)
+            await self.storage.write({reminder.id: reminder})
         except Exception as exception:
             await step_context.context.send_activity(f"Sorry, something went wrong storing your message! {str(exception)}")
 
