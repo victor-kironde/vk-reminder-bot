@@ -1,5 +1,6 @@
 import traceback
 from datetime import datetime
+from typing import Dict
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
 from botbuilder.core.integration import aiohttp_error_middleware
@@ -16,7 +17,7 @@ from botbuilder.core import (
     UserState,
 )
 
-from typing import Dict
+
 
 CONFIG = DefaultConfig()
 
