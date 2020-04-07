@@ -12,8 +12,9 @@ import time as t
 class Intent(Enum):
     CREATE_REMINDER = "CreateReminder"
     SHOW_REMINDERS = "ShowReminders"
-    HELP_INTENT = "Help"
+    HELP = "Help"
     SNOOZE_REMINDER = "Snooze"
+    DELETE_REMINDER = "DeleteReminder"
 
 
 def top_intent(intents: Dict[Intent, dict]) -> TopIntent:

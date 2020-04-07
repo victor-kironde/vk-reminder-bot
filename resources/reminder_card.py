@@ -43,7 +43,8 @@ ReminderCard= {
             "type": "Action.Submit",
             "title": "Delete",
             "data": {
-                "action": "delete"
+                "action": "delete",
+                "reminder_id": ""
             }
         }
     ]
@@ -96,7 +97,10 @@ SnoozeCard = {
                 "actions": [
                     {
                         "type": "Action.Submit",
-                        "title": "OK"
+                        "title": "OK",
+                        "data": {
+                                "action": "snooze"
+                            }
                     }
                 ],
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"

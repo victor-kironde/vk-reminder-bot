@@ -30,7 +30,7 @@ from resources import HelpCard, ReminderCard
 
 from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOptions
 from azure.cognitiveservices.language.luis.runtime.models import LuisResult
-from helpers import LuisHelper
+from helpers import LuisHelper, Intent
 from .cancel_and_help_dialog import CancelAndHelpDialog
 from jsonpickle.unpickler import Unpickler
 config = DefaultConfig()
@@ -76,20 +76,23 @@ class RemindersDialog(CancelAndHelpDialog):
         self.recognizer, step_context.context
         )
         step_context.values[self.REMINDER] = recognizer_result
-        if intent == "ShowReminders":
+        if intent == Intent.SHOW_REMINDERS.value:
             await self._show_reminders(step_context.context)
             return await step_context.end_dialog()
 
-        elif intent == "CreateReminder":
+        elif intent == Intent.CREATE_REMINDER.value:
             return await step_context.next(None)
 
-        elif intent == "Help":
+        elif intent == Intent.HELP.value:
             message = Activity(type=ActivityTypes.message,
                                 attachments=[CardFactory.adaptive_card(HelpCard)])
             await step_context.context.send_activity(message)
             return await step_context.end_dialog()
-        elif intent == "Snooze":
+        elif intent == Intent.SNOOZE_REMINDER.value:
             await self._snooze_reminder(step_context.context, recognizer_result)
+            return await step_context.end_dialog()
+        elif intent == Intent.DELETE_REMINDER.value:
+            await self._delete_reminder(step_context.context)
             return await step_context.end_dialog()
 
         else:
@@ -155,6 +158,7 @@ class RemindersDialog(CancelAndHelpDialog):
         for reminder in reminder_list:
             ReminderCard["body"][0]["text"] = reminder.title if hasattr(reminder, 'title') else ""
             ReminderCard["body"][1]["text"] = reminder.time if hasattr(reminder, 'time') else ""
+            ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
             message = Activity(
             type=ActivityTypes.message,
             attachments=[CardFactory.adaptive_card(ReminderCard)],
@@ -179,6 +183,10 @@ class RemindersDialog(CancelAndHelpDialog):
             )
             await turn_context.send_activity(message)
 
+    async def _delete_reminder(self, turn_context:TurnContext):
+        reminder_id = turn_context.activity.text.split()[1]
+        await self.storage.delete([reminder_id])
+        await turn_context.send_activity("Reminder deleted successfully.")
 
 
 
@@ -188,7 +196,7 @@ class RemindersDialog(CancelAndHelpDialog):
         reply.suggested_actions = SuggestedActions(
             actions=[
                 CardAction(title="Set Reminder", type=ActionTypes.im_back, value="Set Reminder"),
-                CardAction(title="Show Reminders", type=ActionTypes.im_back, value="Show Reminders")
+                CardAction(title="Show All Reminders", type=ActionTypes.im_back, value="Show All Reminders")
             ]
         )
         return await turn_context.send_activity(reply)
