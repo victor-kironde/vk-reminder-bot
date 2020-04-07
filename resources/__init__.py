@@ -1,4 +1,4 @@
 from .help_card import HelpCard
-from .reminder_card import ReminderCard
+from .reminder_card import ReminderCard, SnoozeCard
 
-__all__ = ["HelpCard", "ReminderCard"]
+__all__ = ["HelpCard", "ReminderCard", "SnoozeCard"]
