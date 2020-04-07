@@ -43,6 +43,6 @@ class ReminderHelper:
                         r = reminder
                         r.done = True
                         await storage.write({reminder.id: r})
-                await asyncio.sleep(1)
+                await asyncio.sleep(5)
             except Exception as e:
                 print("Exception occured in remind_user: ", str(e))
