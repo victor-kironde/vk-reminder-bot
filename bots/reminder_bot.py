@@ -44,7 +44,6 @@ class ReminderBot(ActivityHandler):
         await self.user_state.save_changes(turn_context, False)
 
     async def on_message_activity(self, turn_context):
-        # if hasattr(turn_context.activity, "value") and :
         if turn_context.activity.value:
             print("VALUE:", turn_context.activity.value, type(turn_context.activity.value))
             if turn_context.activity.value.get("reminder_id"):
