@@ -44,6 +44,14 @@ class ReminderBot(ActivityHandler):
         await self.user_state.save_changes(turn_context, False)
 
     async def on_message_activity(self, turn_context):
+        if turn_context.activity.value:
+            print("VALUE:", turn_context.activity.value, type(turn_context.activity.value))
+            if turn_context.activity.value.get("reminder_id"):
+                message = "UPDATE "
+                message += turn_context.activity.value["reminder_id"]
+                message += f" {turn_context.activity.value['time']}"
+                turn_context.activity.text = message
+                print("UPDATE MESSAGE:", turn_context.activity.text)
         return await DialogHelper.run_dialog(
         self.dialog,
         turn_context,

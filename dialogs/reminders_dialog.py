@@ -88,6 +88,9 @@ class RemindersDialog(CancelAndHelpDialog):
                                 attachments=[CardFactory.adaptive_card(HelpCard)])
             await step_context.context.send_activity(message)
             return await step_context.end_dialog()
+        elif intent == "Snooze":
+            await self._snooze_reminder(step_context.context, recognizer_result)
+            return await step_context.end_dialog()
 
         else:
             await step_context.context.send_activity("I didn't get that!")
@@ -158,21 +161,34 @@ class RemindersDialog(CancelAndHelpDialog):
             )
             await turn_context.send_activity(message)
 
-    async def _send_suggested_actions(self, turn_context: TurnContext):
-        """
-        Creates and sends an activity with suggested actions to the user. When the user
-        clicks one of the buttons the text value from the "CardAction" will be displayed
-        in the channel just as if the user entered the text. There are multiple
-        "ActionTypes" that may be used for different situations.
-        """
+    async def _snooze_reminder(self, turn_context: TurnContext, reminder):
+        store_items =list(self.storage.client.QueryItems("dbs/w1hKAA==/colls/w1hKAJ-o+vY=/",f"select * from c where c.id='{reminder.id}'"))
+        if len(store_items)>0:
+            # reminder_list = [Unpickler().restore(item["document"]) for item in store_items]
+            r = Unpickler().restore(store_items[0]["document"])
+            r.time = reminder.time
+            r.done = False
+            await self.storage.write({reminder.id: r})
+            await turn_context.send_activity(f"I have updated the reminder!")
 
+            ReminderCard["body"][0]["text"] = r.title
+            ReminderCard["body"][1]["text"] = r.time
+            message = Activity(
+            type=ActivityTypes.message,
+            attachments=[CardFactory.adaptive_card(ReminderCard)],
+            )
+            await turn_context.send_activity(message)
+
+
+
+
+    async def _send_suggested_actions(self, turn_context: TurnContext):
         reply = MessageFactory.text("How can I help you?")
 
         reply.suggested_actions = SuggestedActions(
             actions=[
                 CardAction(title="Set Reminder", type=ActionTypes.im_back, value="Set Reminder"),
-                CardAction(title="Show Reminders", type=ActionTypes.im_back, value="Show Reminders"),
-                CardAction(title="Exit", type=ActionTypes.im_back, value="Exit"),
+                CardAction(title="Show Reminders", type=ActionTypes.im_back, value="Show Reminders")
             ]
         )
         return await turn_context.send_activity(reply)

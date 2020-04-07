@@ -13,6 +13,7 @@ class Intent(Enum):
     CREATE_REMINDER = "CreateReminder"
     SHOW_REMINDERS = "ShowReminders"
     HELP_INTENT = "Help"
+    SNOOZE_REMINDER = "Snooze"
 
 
 def top_intent(intents: Dict[Intent, dict]) -> TopIntent:
@@ -70,6 +71,25 @@ class LuisHelper:
 
                 else:
                     result.time = None
+            elif intent == Intent.SNOOZE_REMINDER.value:
+                text = turn_context.activity.text
+                result = Reminder()
+                result.id = text.split()[1]
+
+                date_entities = recognizer_result.entities.get("datetime", [])
+
+                if date_entities:
+                    timex = date_entities[0]["timex"]
+
+                    if timex:
+                        _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
+
+                        now_timestamp = t.time()
+                        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
+                            now_timestamp
+                        )
+                        result.time = datetime.strftime(_datetime + offset, "%Y-%m-%d %H:%M:%S")
+
         except Exception as exception:
             print(exception)
 
