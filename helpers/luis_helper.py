@@ -12,7 +12,7 @@ import time as t
 class Intent(Enum):
     CREATE_REMINDER = "CreateReminder"
     SHOW_REMINDERS = "ShowReminders"
-    HELP_INTENT = "Help"
+    HELP = "Help"
     SNOOZE_REMINDER = "Snooze"
 
 
