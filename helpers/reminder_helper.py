@@ -17,22 +17,12 @@ class ReminderHelper:
         self.reminder_queue = deque
 
     @staticmethod
-    async def get_reminders():
-        now = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
-        query = f"select * from c where CONTAINS(c.id, 'Reminder') and CONTAINS(c.document.time, '{now}')"
-        print(query)
-        store_items =list(storage.client.QueryItems("dbs/w1hKAA==/colls/w1hKAJ-o+vY=/", query))
-
-        ReminderLog = sorted([Unpickler().restore(item["document"]) for item in store_items])
-
-
     async def remind_user(turn_context: TurnContext, storage):
         while True:
             try:
 
                 now = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
                 query = f"select * from c where CONTAINS(c.id, 'Reminder') and CONTAINS(c.document.time, '{now}') and not c.document.done"
-                # print(query)
                 store_items =list(storage.client.QueryItems("dbs/w1hKAA==/colls/w1hKAJ-o+vY=/", query))
 
                 ReminderLog = sorted([Unpickler().restore(item["document"]) for item in store_items])
