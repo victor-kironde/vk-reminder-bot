@@ -14,6 +14,7 @@ class Intent(Enum):
     SHOW_REMINDERS = "ShowReminders"
     HELP = "Help"
     SNOOZE_REMINDER = "Snooze"
+    DELETE_REMINDER = "DeleteReminder"
 
 
 def top_intent(intents: Dict[Intent, dict]) -> TopIntent:

@@ -91,6 +91,9 @@ class RemindersDialog(CancelAndHelpDialog):
         elif intent == Intent.SNOOZE_REMINDER.value:
             await self._snooze_reminder(step_context.context, recognizer_result)
             return await step_context.end_dialog()
+        elif intent == Intent.DELETE_REMINDER.value:
+            await self._delete_reminder(step_context.context)
+            return await step_context.end_dialog()
 
         else:
             await step_context.context.send_activity("I didn't get that!")
@@ -155,6 +158,7 @@ class RemindersDialog(CancelAndHelpDialog):
         for reminder in reminder_list:
             ReminderCard["body"][0]["text"] = reminder.title if hasattr(reminder, 'title') else ""
             ReminderCard["body"][1]["text"] = reminder.time if hasattr(reminder, 'time') else ""
+            ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
             message = Activity(
             type=ActivityTypes.message,
             attachments=[CardFactory.adaptive_card(ReminderCard)],
@@ -179,6 +183,10 @@ class RemindersDialog(CancelAndHelpDialog):
             )
             await turn_context.send_activity(message)
 
+    async def _delete_reminder(self, turn_context:TurnContext):
+        reminder_id = turn_context.activity.text.split()[1]
+        await self.storage.delete([reminder_id])
+        await turn_context.send_activity("Reminder deleted successfully.")
 
 
 
