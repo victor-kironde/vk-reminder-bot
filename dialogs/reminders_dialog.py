@@ -115,7 +115,7 @@ class RemindersDialog(CancelAndHelpDialog):
     async def time_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         reminder = step_context.values[self.REMINDER]
         if step_context.result:
-            reminder.title = step_context.result
+            reminder.title = step_context.result.title()
         if not reminder.time:
             prompt_options = PromptOptions(
                 prompt=MessageFactory.text("When should I remind you?"),
