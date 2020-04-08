@@ -52,7 +52,7 @@ class ReminderBot(ActivityHandler):
                 message = f"DELETE {value['reminder_id']}"
                 print(message)
             elif action == "snooze":
-                message = f"UPDATE {value['reminder_id']} {value['time']}"
+                message = f"UPDATE {value['reminder_id']} in {value['snooze']}"
                 print(message)
             turn_context.activity.text = message
         return await DialogHelper.run_dialog(
