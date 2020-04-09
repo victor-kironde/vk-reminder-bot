@@ -18,7 +18,6 @@ from botbuilder.core import (
 )
 
 
-
 CONFIG = DefaultConfig()
 
 SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
@@ -49,20 +48,21 @@ ADAPTER.on_turn_error = on_error
 
 
 cosmos_config = CosmosDbConfig(
-        endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
-        masterkey=CONFIG.COSMOSDB_KEY,
-        database=CONFIG.COSMOSDB_DATABASE_ID,
-        container=CONFIG.COSMOSDB_CONTAINER_ID
-    )
+    endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
+    masterkey=CONFIG.COSMOSDB_KEY,
+    database=CONFIG.COSMOSDB_DATABASE_ID,
+    container=CONFIG.COSMOSDB_CONTAINER_ID,
+)
 
 MEMORY = CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
-DIALOG = RemindersDialog(USER_STATE, MEMORY)
+DIALOG = RemindersDialog(USER_STATE, CONVERSATION_STATE, MEMORY)
 CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
-BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, MEMORY)
-
+BOT = ReminderBot(
+    CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, MEMORY
+)
 
 
 async def messages(req: Request) -> Response:
@@ -81,6 +81,7 @@ async def messages(req: Request) -> Response:
         return Response(status=201)
     except Exception as exception:
         raise exception
+
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
