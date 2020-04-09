@@ -64,11 +64,13 @@ class LuisHelper:
                         _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
 
                         now_timestamp = t.time()
-                        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
+                        offset = datetime.fromtimestamp(
                             now_timestamp
-                        )
+                        ) - datetime.utcfromtimestamp(now_timestamp)
                         # result = datetime + offset
-                        result.time = datetime.strftime(_datetime + offset, "%Y-%m-%d %H:%M:%S")
+                        result.time = datetime.strftime(
+                            _datetime + offset, "%Y-%m-%d %H:%M:%S"
+                        )
 
                 else:
                     result.time = None
@@ -86,10 +88,12 @@ class LuisHelper:
                         _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
 
                         now_timestamp = t.time()
-                        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
+                        offset = datetime.fromtimestamp(
                             now_timestamp
+                        ) - datetime.utcfromtimestamp(now_timestamp)
+                        result.time = datetime.strftime(
+                            _datetime + offset, "%Y-%m-%d %H:%M:%S"
                         )
-                        result.time = datetime.strftime(_datetime + offset, "%Y-%m-%d %H:%M:%S")
 
         except Exception as exception:
             print(exception)

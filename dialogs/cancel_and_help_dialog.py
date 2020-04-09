@@ -26,8 +26,10 @@ class CancelAndHelpDialog(ComponentDialog):
     async def interrupt(self, inner_dc: DialogContext) -> DialogTurnResult:
         if inner_dc.context.activity.type == ActivityTypes.message:
             text = inner_dc.context.activity.text.lower()
-            help_message = Activity(type=ActivityTypes.message,
-                                attachments=[CardFactory.adaptive_card(HelpCard)])
+            help_message = Activity(
+                type=ActivityTypes.message,
+                attachments=[CardFactory.adaptive_card(HelpCard)],
+            )
 
             if text in ("help", "?"):
                 await inner_dc.context.send_activity(help_message)
