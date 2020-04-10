@@ -36,7 +36,7 @@ import json
 import os
 
 from botbuilder.dialogs.choices import Choice
-from data_models import Reminder, ActivityMappingState
+from data_models import Reminder, ActivityMappingState, ReminderLog
 from datetime import datetime
 from config import DefaultConfig
 from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
@@ -54,7 +54,7 @@ config = DefaultConfig()
 
 class RemindersDialog(CancelAndHelpDialog):
     def __init__(
-        self, user_state: UserState, conversation_state: ConversationState, storage
+        self, user_state: UserState, conversation_state: ConversationState, storage,
     ):
         super(RemindersDialog, self).__init__(RemindersDialog.__name__)
 
@@ -141,7 +141,7 @@ class RemindersDialog(CancelAndHelpDialog):
         reminder = step_context.values[self.REMINDER]
         if step_context.result:
             reminder.title = step_context.result.title()
-        if not reminder.time:
+        if not reminder.reminder_time:
             prompt_options = PromptOptions(
                 prompt=MessageFactory.text("When should I remind you?"),
                 retry_prompt=MessageFactory.text("Please enter a valid time:"),
@@ -154,13 +154,15 @@ class RemindersDialog(CancelAndHelpDialog):
         self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
         reminder: Reminder = step_context.values[self.REMINDER]
-        reminder.time = (
-            step_context.result[0].value if not reminder.time else reminder.time
+        reminder.reminder_time = (
+            step_context.result[0].value
+            if not reminder.reminder_time
+            else reminder.reminder_time
         )
         await step_context.context.send_activity(f"""I have set the reminder!""")
 
         ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = reminder.time
+        ReminderCard["body"][1]["text"] = reminder.reminder_time
 
         await step_context.context.send_activity(
             Activity(
@@ -174,7 +176,14 @@ class RemindersDialog(CancelAndHelpDialog):
     async def _save_reminder(self, step_context):
         reminder = step_context.values[self.REMINDER]
         try:
-            await self.storage.write({reminder.id: reminder})
+            r = await self.user_reminders_state_accessor.get(
+                step_context.context, ReminderLog
+            )
+            r.new_reminders.append(reminder)
+            await self.user_reminders_state_accessor.set(step_context.context, r)
+
+            # print("IN _SAVE_REMINDER", r)
+            # await self.storage.write({reminder.id: reminder})
         except Exception as exception:
             await step_context.context.send_activity(
                 f"Sorry, something went wrong storing your message! {str(exception)}"
@@ -196,7 +205,7 @@ class RemindersDialog(CancelAndHelpDialog):
                 reminder.title if hasattr(reminder, "title") else ""
             )
             ReminderCard["body"][1]["text"] = (
-                reminder.time if hasattr(reminder, "time") else ""
+                reminder.reminder_time if hasattr(reminder, "reminder_time") else ""
             )
             ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
             message = Activity(
@@ -217,7 +226,7 @@ class RemindersDialog(CancelAndHelpDialog):
         )
         if len(store_items) > 0:
             r = Unpickler().restore(store_items[0]["document"])
-            r.time = reminder.time
+            r.time = reminder.reminder_time
             r.done = False
             await self.storage.write({reminder.id: r})
             await turn_context.send_activity(f"I have updated the reminder!")
