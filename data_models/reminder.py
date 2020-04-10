@@ -19,12 +19,10 @@ class Reminder(StoreItem):
         super(Reminder, self).__init__()
         self.title: str = title
         self.reminder_time: str = self._validate_time(reminder_time)
-        # self.type = "Reminder"
-        # self.id = "Reminder-" + str(uuid.uuid4())
         self.done = done
 
     def __lt__(self, other):
-        return self.datetime < other.datetime
+        return self.datetime > other.datetime
 
     @property
     def datetime(self):
