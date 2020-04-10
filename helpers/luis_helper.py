@@ -68,12 +68,12 @@ class LuisHelper:
                             now_timestamp
                         ) - datetime.utcfromtimestamp(now_timestamp)
                         # result = datetime + offset
-                        result.time = datetime.strftime(
+                        result.reminder_time = datetime.strftime(
                             _datetime + offset, "%Y-%m-%d %H:%M:%S"
                         )
 
                 else:
-                    result.time = None
+                    result.reminder_time = None
             elif intent == Intent.SNOOZE_REMINDER.value:
                 text = turn_context.activity.text
                 result = Reminder()
@@ -91,7 +91,7 @@ class LuisHelper:
                         offset = datetime.fromtimestamp(
                             now_timestamp
                         ) - datetime.utcfromtimestamp(now_timestamp)
-                        result.time = datetime.strftime(
+                        result.reminder_time = datetime.strftime(
                             _datetime + offset, "%Y-%m-%d %H:%M:%S"
                         )
 
