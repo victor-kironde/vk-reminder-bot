@@ -65,6 +65,9 @@ class RemindersDialog(CancelAndHelpDialog):
         self.conversation_state_accessor = self.conversation_state.create_property(
             "ActivityMappingState"
         )
+        self.user_reminders_state_accessor = self.conversation_state.create_property(
+            "RemindersState"
+        )
 
         self.add_dialog(TextPrompt(TextPrompt.__name__))
         self.add_dialog(DateTimePrompt(DateTimePrompt.__name__))
@@ -128,9 +131,7 @@ class RemindersDialog(CancelAndHelpDialog):
         reminder = step_context.values[self.REMINDER]
         if not reminder.title:
             prompt_options = PromptOptions(
-                prompt=MessageFactory.text(
-                    "What would you like me to remind you about?"
-                )
+                prompt=MessageFactory.text("Please enter Reminder Title:")
             )
 
             return await step_context.prompt(TextPrompt.__name__, prompt_options)
@@ -175,28 +176,18 @@ class RemindersDialog(CancelAndHelpDialog):
 
     async def _save_reminder(self, step_context):
         reminder = step_context.values[self.REMINDER]
-        try:
-            r = await self.user_reminders_state_accessor.get(
-                step_context.context, ReminderLog
-            )
-            r.new_reminders.append(reminder)
-            await self.user_reminders_state_accessor.set(step_context.context, r)
-
-            # print("IN _SAVE_REMINDER", r)
-            # await self.storage.write({reminder.id: reminder})
-        except Exception as exception:
-            await step_context.context.send_activity(
-                f"Sorry, something went wrong storing your message! {str(exception)}"
-            )
+        reminder_log = await self.user_reminders_state_accessor.get(
+            step_context.context, ReminderLog
+        )
+        reminder_log.new_reminders.append(reminder)
+        await self.user_reminders_state_accessor.set(step_context.context, reminder_log)
 
     async def _show_reminders(self, turn_context: TurnContext):
-        store_items = list(
-            self.storage.client.QueryItems(
-                "dbs/w1hKAA==/colls/w1hKAJ-o+vY=/",
-                "select * from c where CONTAINS(c.id, 'Reminder')",
-            )
+        reminder_log = await self.user_reminders_state_accessor.get(
+            turn_context, ReminderLog
         )
-        reminder_list = [Unpickler().restore(item["document"]) for item in store_items]
+        reminder_list = reminder_log.new_reminders
+
         activity_mapping_state = await self.conversation_state_accessor.get(
             turn_context, ActivityMappingState
         )
@@ -217,49 +208,37 @@ class RemindersDialog(CancelAndHelpDialog):
 
         print("Mapping_state", activity_mapping_state.activities)
 
-    async def _snooze_reminder(self, turn_context: TurnContext, reminder):
-        store_items = list(
-            self.storage.client.QueryItems(
-                "dbs/w1hKAA==/colls/w1hKAJ-o+vY=/",
-                f"select * from c where c.id='{reminder.id}'",
-            )
+    async def _snooze_reminder(self, turn_context: TurnContext, new_reminder):
+        reminder_log = await self.user_reminders_state_accessor.get(
+            turn_context, ReminderLog
         )
-        if len(store_items) > 0:
-            r = Unpickler().restore(store_items[0]["document"])
-            r.time = reminder.reminder_time
-            r.done = False
-            await self.storage.write({reminder.id: r})
-            await turn_context.send_activity(f"I have updated the reminder!")
+        new_reminders = reminder_log.new_reminders
+        reminder = list(
+            filter(lambda reminder: reminder.id == new_reminder.id, new_reminders)
+        )  # the reminder we want
+        reminder.time = new_reminder.reminder_time
+        reminder.done = False
+        await turn_context.send_activity(f"I have updated the reminder!, or have I?")
 
-            message = Activity(
-                type=ActivityTypes.message,
-                attachments=[CardFactory.adaptive_card(ReminderCard)],
-            )
+        message = Activity(
+            type=ActivityTypes.message,
+            attachments=[CardFactory.adaptive_card(ReminderCard)],
+        )
 
-            ReminderCard["body"][0]["text"] = r.title
-            ReminderCard["body"][1]["text"] = r.time
-            ReminderCard["actions"][0]["data"]["reminder_id"] = r.id
-            ReminderCard["actions"][0]["data"]["activity_id"] = message.id
+        ReminderCard["body"][0]["text"] = reminder.title
+        ReminderCard["body"][1]["text"] = reminder.time
+        ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
+        ReminderCard["actions"][0]["data"]["activity_id"] = message.id
 
-            sent_activity = await turn_context.send_activity(message)
+        sent_activity = await turn_context.send_activity(message)
 
-            activity_mapping_state = await self.conversation_state_accessor.get(
-                turn_context, ActivityMappingState
-            )
-            activity_mapping_state.activities[reminder.id] = sent_activity.id
-
-            # print("MESSAGE ID", dd)
-
-    async def _delete_reminder(self, turn_context: TurnContext):
-        reminder_id = turn_context.activity.text.split()[1]
-        await self.storage.delete([reminder_id])
         activity_mapping_state = await self.conversation_state_accessor.get(
             turn_context, ActivityMappingState
         )
-        activity_to_delete = activity_mapping_state.activities[reminder_id]
-        return await turn_context.delete_activity(activity_to_delete)
-        print("DELETED ACTIVITY", activity_to_delete)
-        await turn_context.send_activity("Reminder deleted successfully.")
+        activity_mapping_state.activities[reminder.id] = sent_activity.id
+
+    async def _delete_reminder(self, turn_context: TurnContext):
+        raise NotImplementedError
 
     async def _send_suggested_actions(self, turn_context: TurnContext):
         reply = MessageFactory.text("How can I help you?")
