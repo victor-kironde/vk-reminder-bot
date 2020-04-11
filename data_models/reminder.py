@@ -3,8 +3,7 @@ Create a reminder store item
 """
 
 import time
-
-# import uuid
+import uuid
 from datetime import datetime
 
 # from typing import List
@@ -20,6 +19,7 @@ class Reminder(StoreItem):
         self.title: str = title
         self.reminder_time: str = self._validate_time(reminder_time)
         self.done = done
+        self.id = "Reminder-" + str(uuid.uuid4())
 
     def __lt__(self, other):
         return self.datetime > other.datetime
