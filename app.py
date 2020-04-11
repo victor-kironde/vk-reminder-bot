@@ -32,8 +32,9 @@ ADAPTER = BotFrameworkAdapter(SETTINGS)
 
 def run_reminder():
     print("clock started ....")
+    url = CONFIG.APP_HOST_NAME
     while True:
-        requests.get("http://localhost:3978/api/notify")
+        requests.get(f"{url}/api/notify")
         time.sleep(1)
 
 
