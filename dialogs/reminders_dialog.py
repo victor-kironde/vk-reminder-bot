@@ -207,13 +207,15 @@ class RemindersDialog(CancelAndHelpDialog):
 
     async def _snooze_reminder(self, turn_context: TurnContext, new_reminder):
         reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
-        new_reminders = reminder_log.new_reminders
+        old_reminders = reminder_log.old_reminders
         reminder = list(
-            filter(lambda reminder: reminder.id == new_reminder.id, new_reminders)
-        )  # the reminder we want
-        reminder.time = new_reminder.reminder_time
-        reminder.done = False
-        await turn_context.send_activity(f"I have updated the reminder!, or have I?")
+            filter(lambda reminder: reminder.id == new_reminder.id, old_reminders)
+        )[0]
+
+        new_reminder.title = reminder.title
+        reminder_log.new_reminders.append(new_reminder)
+
+        await turn_context.send_activity(f"I have updated the reminder!")
 
         message = Activity(
             type=ActivityTypes.message,
@@ -221,9 +223,9 @@ class RemindersDialog(CancelAndHelpDialog):
         )
 
         ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = reminder.time
-        ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
-        ReminderCard["actions"][0]["data"]["activity_id"] = message.id
+        ReminderCard["body"][1]["text"] = new_reminder.reminder_time
+        ReminderCard["actions"][0]["data"]["reminder_id"] = new_reminder.id
+        ReminderCard["actions"][0]["data"]["activity_id"] = new_reminder.id
 
         sent_activity = await turn_context.send_activity(message)
 
