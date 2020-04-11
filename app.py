@@ -1,4 +1,8 @@
 import traceback
+import requests
+import threading
+import uuid
+import time
 from datetime import datetime
 from typing import Dict
 from aiohttp import web
@@ -15,19 +19,22 @@ from botbuilder.core import (
     ConversationState,
     TurnContext,
     UserState,
+    MemoryStorage,
 )
-
-import uuid
-
-# from .helpers import DialogHelper, ReminderHelper
+from helpers import ReminderHelper
 
 CONFIG = DefaultConfig()
-
-
 APP_ID = CONFIG.APP_ID if CONFIG.APP_ID else uuid.uuid4()
 
 SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
+
+
+def run_reminder():
+    print("clock started ....")
+    while True:
+        requests.get("http://localhost:3978/api/notify")
+        time.sleep(1)
 
 
 async def on_error(context: TurnContext, error: Exception):
@@ -52,26 +59,24 @@ async def on_error(context: TurnContext, error: Exception):
 
 ADAPTER.on_turn_error = on_error
 
+if CONFIG.DEBUG:
+    MEMORY = MemoryStorage()
+else:
+    cosmos_config = CosmosDbConfig(
+        endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
+        masterkey=CONFIG.COSMOSDB_KEY,
+        database=CONFIG.COSMOSDB_DATABASE_ID,
+        container=CONFIG.COSMOSDB_CONTAINER_ID,
+    )
+    MEMORY = CosmosDbStorage(cosmos_config)
 
-# cosmos_config = CosmosDbConfig(
-#     endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
-#     masterkey=CONFIG.COSMOSDB_KEY,
-#     database=CONFIG.COSMOSDB_DATABASE_ID,
-#     container=CONFIG.COSMOSDB_CONTAINER_ID,
-# )
-# USE MEMORY STORAGE TO SIMPLIFY DEV
-from botbuilder.core import MemoryStorage
-
-MEMORY = MemoryStorage()  # CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
 ACCESSOR = USER_STATE.create_property("RemindersState")
-DIALOG = RemindersDialog(USER_STATE, CONVERSATION_STATE, MEMORY)
+DIALOG = RemindersDialog(USER_STATE, CONVERSATION_STATE, ACCESSOR)
 CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
-BOT = ReminderBot(
-    CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, MEMORY
-)
+BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES)
 
 
 async def messages(req: Request) -> Response:
@@ -85,8 +90,6 @@ async def messages(req: Request) -> Response:
 
     try:
         response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
-        print("ADAPTER RESPONSE")
-        print(response.json())
         if response:
             return json_response(data=response.body, status=response.status)
         return Response(status=201)
@@ -96,29 +99,18 @@ async def messages(req: Request) -> Response:
 
 async def notify(req: Request) -> Response:  # pylint: disable=unused-argument
     await _send_proactive_message()
-    # await
     return Response(status=201, text="Proactive messages have been sent")
 
 
-CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
-
-
 async def _send_proactive_message():
-    print("GETTING SOMEWHERE")
-    prinnt("conversation_REFs", CONVERSATION_REFERENCES)
     for conversation_reference in CONVERSATION_REFERENCES.values():
-        print("conversation_REF: ", conversation_reference)
         return await ADAPTER.continue_conversation(
-            conversation_reference, remind_user, APP_ID,
+            conversation_reference, start_reminder, APP_ID,
         )
 
 
-async def remind_user(turn_context: TurnContext, storage):
-    # message = Activity(
-    #     type=ActivityTypes.message, attachments=[CardFactory.adaptive_card(SnoozeCard)],
-    # )
-
-    await turn_context.send_activity("HEY!!!")
+async def start_reminder(turn_contenxt):
+    return await ReminderHelper.remind_user(turn_contenxt, ACCESSOR)
 
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
@@ -127,6 +119,8 @@ APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
+        reminder_thread = threading.Thread(target=run_reminder, daemon=True)
+        reminder_thread.start()
         web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error
