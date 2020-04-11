@@ -17,8 +17,14 @@ from botbuilder.core import (
     UserState,
 )
 
+import uuid
+
+# from .helpers import DialogHelper, ReminderHelper
 
 CONFIG = DefaultConfig()
+
+
+APP_ID = CONFIG.APP_ID if CONFIG.APP_ID else uuid.uuid4()
 
 SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
@@ -47,16 +53,19 @@ async def on_error(context: TurnContext, error: Exception):
 ADAPTER.on_turn_error = on_error
 
 
-cosmos_config = CosmosDbConfig(
-    endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
-    masterkey=CONFIG.COSMOSDB_KEY,
-    database=CONFIG.COSMOSDB_DATABASE_ID,
-    container=CONFIG.COSMOSDB_CONTAINER_ID,
-)
+# cosmos_config = CosmosDbConfig(
+#     endpoint=CONFIG.COSMOSDB_SERVICE_ENDPOINT,
+#     masterkey=CONFIG.COSMOSDB_KEY,
+#     database=CONFIG.COSMOSDB_DATABASE_ID,
+#     container=CONFIG.COSMOSDB_CONTAINER_ID,
+# )
+# USE MEMORY STORAGE TO SIMPLIFY DEV
+from botbuilder.core import MemoryStorage
 
-MEMORY = CosmosDbStorage(cosmos_config)
+MEMORY = MemoryStorage()  # CosmosDbStorage(cosmos_config)
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
+ACCESSOR = USER_STATE.create_property("RemindersState")
 DIALOG = RemindersDialog(USER_STATE, CONVERSATION_STATE, MEMORY)
 CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
@@ -76,6 +85,8 @@ async def messages(req: Request) -> Response:
 
     try:
         response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
+        print("ADAPTER RESPONSE")
+        print(response.json())
         if response:
             return json_response(data=response.body, status=response.status)
         return Response(status=201)
@@ -83,8 +94,36 @@ async def messages(req: Request) -> Response:
         raise exception
 
 
+async def notify(req: Request) -> Response:  # pylint: disable=unused-argument
+    await _send_proactive_message()
+    # await
+    return Response(status=201, text="Proactive messages have been sent")
+
+
+CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
+
+
+async def _send_proactive_message():
+    print("GETTING SOMEWHERE")
+    prinnt("conversation_REFs", CONVERSATION_REFERENCES)
+    for conversation_reference in CONVERSATION_REFERENCES.values():
+        print("conversation_REF: ", conversation_reference)
+        return await ADAPTER.continue_conversation(
+            conversation_reference, remind_user, APP_ID,
+        )
+
+
+async def remind_user(turn_context: TurnContext, storage):
+    # message = Activity(
+    #     type=ActivityTypes.message, attachments=[CardFactory.adaptive_card(SnoozeCard)],
+    # )
+
+    await turn_context.send_activity("HEY!!!")
+
+
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
+APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
