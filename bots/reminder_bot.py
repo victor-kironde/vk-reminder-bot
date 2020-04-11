@@ -38,9 +38,6 @@ class ReminderBot(ActivityHandler):
         self.user_welcome_state_accessor = self.user_state.create_property(
             "WelcomeUserState"
         )
-        self.user_reminders_state_accessor = self.user_state.create_property(
-            "RemindersState"
-        )
         self.storage = storage
         self.conversation_references = conversation_references
 
@@ -51,6 +48,7 @@ class ReminderBot(ActivityHandler):
         await self.user_state.save_changes(turn_context, False)
 
     async def on_message_activity(self, turn_context):
+        self._add_conversation_reference(turn_context.activity)
         value = turn_context.activity.value
         if value:
             print("VALUE:", value)
@@ -75,7 +73,6 @@ class ReminderBot(ActivityHandler):
 
     async def on_conversation_update_activity(self, turn_context):
         self._add_conversation_reference(turn_context.activity)
-        await ReminderHelper.remind_user(turn_context, self.storage)
         return await super().on_conversation_update_activity(turn_context)
 
     async def _welcome_user(self, turn_context: TurnContext):
