@@ -54,21 +54,20 @@ config = DefaultConfig()
 
 class RemindersDialog(CancelAndHelpDialog):
     def __init__(
-        self, user_state: UserState, conversation_state: ConversationState, storage,
+        self,
+        user_state: UserState,
+        conversation_state: ConversationState,
+        reminders_accessor,
     ):
         super(RemindersDialog, self).__init__(RemindersDialog.__name__)
 
         self.user_state = user_state
         self.conversation_state = conversation_state
         self.REMINDER = "value-reminder"
-        self.storage = storage
         self.conversation_state_accessor = self.conversation_state.create_property(
             "ActivityMappingState"
         )
-        self.user_reminders_state_accessor = self.conversation_state.create_property(
-            "RemindersState"
-        )
-
+        self.reminders_accessor = reminders_accessor
         self.add_dialog(TextPrompt(TextPrompt.__name__))
         self.add_dialog(DateTimePrompt(DateTimePrompt.__name__))
         self.add_dialog(ConfirmPrompt(ConfirmPrompt.__name__))
@@ -176,16 +175,14 @@ class RemindersDialog(CancelAndHelpDialog):
 
     async def _save_reminder(self, step_context):
         reminder = step_context.values[self.REMINDER]
-        reminder_log = await self.user_reminders_state_accessor.get(
+        reminder_log = await self.reminders_accessor.get(
             step_context.context, ReminderLog
         )
         reminder_log.new_reminders.append(reminder)
-        await self.user_reminders_state_accessor.set(step_context.context, reminder_log)
+        await self.reminders_accessor.set(step_context.context, reminder_log)
 
     async def _show_reminders(self, turn_context: TurnContext):
-        reminder_log = await self.user_reminders_state_accessor.get(
-            turn_context, ReminderLog
-        )
+        reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
         reminder_list = reminder_log.new_reminders
 
         activity_mapping_state = await self.conversation_state_accessor.get(
@@ -209,9 +206,7 @@ class RemindersDialog(CancelAndHelpDialog):
         print("Mapping_state", activity_mapping_state.activities)
 
     async def _snooze_reminder(self, turn_context: TurnContext, new_reminder):
-        reminder_log = await self.user_reminders_state_accessor.get(
-            turn_context, ReminderLog
-        )
+        reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
         new_reminders = reminder_log.new_reminders
         reminder = list(
             filter(lambda reminder: reminder.id == new_reminder.id, new_reminders)
