@@ -7,7 +7,7 @@ from botbuilder.core import (
 )
 from botbuilder.dialogs import Dialog
 from helpers import DialogHelper, ReminderHelper
-from data_models import WelcomeUserState
+from data_models import WelcomeUserState, ReminderLog
 
 from botbuilder.schema import Activity, ConversationReference
 
@@ -21,7 +21,6 @@ class ReminderBot(ActivityHandler):
         user_state: UserState,
         dialog: Dialog,
         conversation_references: Dict[str, ConversationReference],
-        storage,
     ):
         if conversation_state is None:
             raise Exception(
@@ -38,7 +37,6 @@ class ReminderBot(ActivityHandler):
         self.user_welcome_state_accessor = self.user_state.create_property(
             "WelcomeUserState"
         )
-        self.storage = storage
         self.conversation_references = conversation_references
 
     async def on_turn(self, turn_context: TurnContext):
@@ -51,14 +49,11 @@ class ReminderBot(ActivityHandler):
         self._add_conversation_reference(turn_context.activity)
         value = turn_context.activity.value
         if value:
-            print("VALUE:", value)
             action = value.get("action")
             if action == "delete":
                 message = f"DELETE {value['reminder_id']}"
-                print(message)
             elif action == "snooze":
                 message = f"UPDATE {value['reminder_id']} in {value['snooze']}"
-                print(message)
             turn_context.activity.text = message
         return await DialogHelper.run_dialog(
             self.dialog,
@@ -76,6 +71,7 @@ class ReminderBot(ActivityHandler):
         return await super().on_conversation_update_activity(turn_context)
 
     async def _welcome_user(self, turn_context: TurnContext):
+        self._add_conversation_reference(turn_context.activity)
         welcome_user_state = await self.user_welcome_state_accessor.get(
             turn_context, WelcomeUserState
         )
