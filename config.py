@@ -2,6 +2,7 @@
 import os
 class DefaultConfig:
     PORT = os.environ.get("PORT", "")
+    APP_HOST_NAME = os.environ.get("HostName", "")
     DEBUG = bool(os.environ.get("DEBUG", 'True'))
     APP_ID = os.environ.get("MicrosoftAppId", "")
     APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "")
