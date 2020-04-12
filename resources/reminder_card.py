@@ -28,7 +28,7 @@ SnoozeCard = {
             "columns": [
                 {
                     "type": "Column",
-                    "width": "auto",
+                    "width": 50,
                     "items": [
                         {
                             "type": "TextBlock",
@@ -61,13 +61,18 @@ SnoozeCard = {
                     "width": "auto",
                     "horizontalAlignment": "Center",
                     "style": "default",
-                    "backgroundImage": {
-                        "url": "https://i.ibb.co/RvYB9Gc/bell-200-transparent.gif",
-                        "horizontalAlignment": "Center",
-                    },
+                    "backgroundImage": {"url": "", "horizontalAlignment": "Center"},
                     "verticalContentAlignment": "Center",
                     "height": "stretch",
                     "spacing": "None",
+                    "items": [
+                        {"type": "ImageSet"},
+                        {
+                            "type": "Image",
+                            "altText": "",
+                            "url": "https://i.ibb.co/RvYB9Gc/bell-200-transparent.gif",
+                        },
+                    ],
                 },
             ],
         }

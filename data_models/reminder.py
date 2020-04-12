@@ -31,11 +31,9 @@ class Reminder(StoreItem):
         self._reminder_time = self._validate_time(reminder_time)
 
     def _validate_time(self, reminder_time=None):
-        if not reminder_time or type(reminder_time) != str:
+        if not reminder_time or not isinstance(reminder_time, str):
             return reminder_time
         try:
-            time_format = "%Y-%m-%d %I:%M %p"
-            stime = ""
             ptime = None
             if ":" in reminder_time and reminder_time.index(":") == 2:
                 t = reminder_time.split(":")
@@ -48,9 +46,6 @@ class Reminder(StoreItem):
                 )
             elif reminder_time.index("-") == 4:
                 ptime = datetime.strptime(reminder_time, "%Y-%m-%d %H:%M:%S")
-            stime = datetime.strftime(
-                self.__datetime_from_utc_to_local(ptime), time_format
-            )
             return self.__datetime_from_utc_to_local(ptime)
         except Exception as exception:
             print("Exception occured while Validating Time:", str(exception))
