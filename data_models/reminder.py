@@ -2,11 +2,9 @@
 Create a reminder store item
 """
 
-import time
 import uuid
 from datetime import datetime
-
-# from typing import List
+import pytz
 from botbuilder.core import StoreItem
 
 
@@ -17,25 +15,36 @@ class Reminder(StoreItem):
         """
         super(Reminder, self).__init__()
         self.title: str = title
-        self.reminder_time: str = self._validate_time(reminder_time)
+        self.reminder_time: str = reminder_time
         self.done = done
         self.id = "Reminder-" + str(uuid.uuid4())
 
     def __lt__(self, other):
-        return self.datetime > other.datetime
+        return self.reminder_time > other.reminder_time
+
+    # @property
+    # def datetime(self):
+    #     """
+    #     get reminder datetime
+    #     """
+    #     parsed_dt = datetime.strptime(self.reminder_time, "%Y-%m-%d %I:%M %p")
+    #     timezone = pytz.timezone("Africa/Nairobi")
+    #     local_time = timezone.localize(parsed_dt)
+    #     return local_time
 
     @property
-    def datetime(self):
-        """
-        get reminder datetime
-        """
-        return datetime.strptime(self.reminder_time, "%Y-%m-%d %H:%M:%S")
+    def reminder_time(self):
+        return self._reminder_time
 
-    def _validate_time(self, reminder_time):
-        if not reminder_time:
-            return
+    @reminder_time.setter
+    def reminder_time(self, reminder_time):
+        self._reminder_time = self._validate_time(reminder_time)
+
+    def _validate_time(self, reminder_time=None):
+        if not reminder_time or type(reminder_time) != str:
+            return reminder_time
         try:
-            time_format = "%Y-%m-%d %H:%M:%S"
+            time_format = "%Y-%m-%d %I:%M %p"
             stime = ""
             ptime = None
             if ":" in reminder_time and reminder_time.index(":") == 2:
@@ -48,18 +57,15 @@ class Reminder(StoreItem):
                     hour=0, minute=0, second=0
                 )
             elif reminder_time.index("-") == 4:
-                ptime = datetime.strptime(reminder_time, time_format)
+                ptime = datetime.strptime(reminder_time, "%Y-%m-%d %H:%M:%S")
             stime = datetime.strftime(
                 self.__datetime_from_utc_to_local(ptime), time_format
             )
-            return stime[: stime.rfind(":")]
+            return self.__datetime_from_utc_to_local(ptime)
         except Exception as exception:
             print("Exception occured while Validating Time:", str(exception))
 
     def __datetime_from_utc_to_local(self, utc_datetime):
-        now_timestamp = time.time()
-        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(
-            now_timestamp
-        )
-        result = utc_datetime + offset
+        timezone = pytz.timezone("Africa/Nairobi")
+        result = timezone.localize(utc_datetime)
         return result

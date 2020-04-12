@@ -9,15 +9,20 @@ class ReminderHelper:
     @staticmethod
     async def remind_user(turn_context: TurnContext, accessor):
         reminder_log = await accessor.get(turn_context, ReminderLog)
-        now = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
+        now = datetime.strftime(datetime.now(), "%Y-%m-%d %I:%M")
         if len(reminder_log.new_reminders) > 0:
-            if now in sorted(reminder_log.new_reminders)[0].reminder_time:
+            reminder_time = datetime.strftime(
+                sorted(reminder_log.new_reminders)[0].reminder_time, "%Y-%m-%d %I:%M %p"
+            )
+            if now in reminder_time:
                 reminder = reminder_log.new_reminders.pop(0)
                 SnoozeCard["body"][0]["columns"][0]["items"][0]["text"] = (
                     reminder.title if hasattr(reminder, "title") else ""
                 )
                 SnoozeCard["body"][0]["columns"][0]["items"][1]["text"] = (
-                    reminder.reminder_time if hasattr(reminder, "reminder_time") else ""
+                    datetime.strftime(reminder.reminder_time, "%Y-%m-%d %I:%M %p")
+                    if hasattr(reminder, "reminder_time")
+                    else ""
                 )
                 SnoozeCard["actions"][0]["data"]["reminder_id"] = reminder.id
                 SnoozeCard["actions"][1]["data"]["reminder_id"] = reminder.id
