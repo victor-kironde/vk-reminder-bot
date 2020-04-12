@@ -31,10 +31,6 @@ from botbuilder.schema import (
     ActionTypes,
     SuggestedActions,
 )
-
-import json
-import os
-
 from botbuilder.dialogs.choices import Choice
 from data_models import Reminder, ActivityMappingState, ReminderLog
 from datetime import datetime
@@ -45,7 +41,7 @@ from resources import HelpCard, ReminderCard
 
 from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOptions
 from azure.cognitiveservices.language.luis.runtime.models import LuisResult
-from helpers import LuisHelper, Intent
+from helpers import LuisHelper, Intent, DatetimeHelper
 from .cancel_and_help_dialog import CancelAndHelpDialog
 from jsonpickle.unpickler import Unpickler
 
@@ -162,7 +158,9 @@ class RemindersDialog(CancelAndHelpDialog):
         await step_context.context.send_activity(f"""I have set the reminder!""")
 
         ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = reminder.reminder_time
+        ReminderCard["body"][1]["text"] = datetime.strftime(
+            reminder.reminder_time, "%Y-%m-%d %I:%M %p"
+        )
 
         await step_context.context.send_activity(
             Activity(
@@ -193,7 +191,9 @@ class RemindersDialog(CancelAndHelpDialog):
                 reminder.title if hasattr(reminder, "title") else ""
             )
             ReminderCard["body"][1]["text"] = (
-                reminder.reminder_time if hasattr(reminder, "reminder_time") else ""
+                datetime.strftime(reminder.reminder_time, "%Y-%m-%d %I:%M %p")
+                if hasattr(reminder, "reminder_time")
+                else ""
             )
             ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
             message = Activity(
@@ -223,7 +223,9 @@ class RemindersDialog(CancelAndHelpDialog):
         )
 
         ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = new_reminder.reminder_time
+        ReminderCard["body"][1]["text"] = datetime.strftime(
+            new_reminder.reminder_time, "%Y-%m-%d %I:%M %p"
+        )
         ReminderCard["actions"][0]["data"]["reminder_id"] = new_reminder.id
         ReminderCard["actions"][0]["data"]["activity_id"] = new_reminder.id
 

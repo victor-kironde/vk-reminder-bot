@@ -5,8 +5,9 @@ from typing import Dict
 from botbuilder.ai.luis import LuisRecognizer
 from botbuilder.core import IntentScore, TopIntent, TurnContext
 from data_models import Reminder
+
 from datetime import datetime
-import time as t
+from .datetime_helper import DatetimeHelper
 
 
 class Intent(Enum):
@@ -15,6 +16,7 @@ class Intent(Enum):
     HELP = "Help"
     SNOOZE_REMINDER = "Snooze"
     DELETE_REMINDER = "DeleteReminder"
+    NONE_INTENT = None
 
 
 def top_intent(intents: Dict[Intent, dict]) -> TopIntent:
@@ -61,16 +63,7 @@ class LuisHelper:
                     timex = date_entities[0]["timex"]
 
                     if timex:
-                        _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
-
-                        now_timestamp = t.time()
-                        offset = datetime.fromtimestamp(
-                            now_timestamp
-                        ) - datetime.utcfromtimestamp(now_timestamp)
-                        # result = datetime + offset
-                        result.reminder_time = datetime.strftime(
-                            _datetime + offset, "%Y-%m-%d %H:%M:%S"
-                        )
+                        result.reminder_time = DatetimeHelper.format_datetime(timex[0])
 
                 else:
                     result.reminder_time = None
@@ -85,15 +78,7 @@ class LuisHelper:
                     timex = date_entities[0]["timex"]
 
                     if timex:
-                        _datetime = datetime.strptime(timex[0], "%Y-%m-%dT%H:%M:%S")
-
-                        now_timestamp = t.time()
-                        offset = datetime.fromtimestamp(
-                            now_timestamp
-                        ) - datetime.utcfromtimestamp(now_timestamp)
-                        result.reminder_time = datetime.strftime(
-                            _datetime + offset, "%Y-%m-%d %H:%M:%S"
-                        )
+                        result.reminder_time = DatetimeHelper.format_datetime(timex[0])
 
         except Exception as exception:
             print(exception)
