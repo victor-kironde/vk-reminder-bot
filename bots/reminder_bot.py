@@ -8,7 +8,6 @@ from botbuilder.core import (
 from botbuilder.dialogs import Dialog
 from helpers import DialogHelper
 from data_models import WelcomeUserState
-
 from botbuilder.schema import Activity, ConversationReference
 
 

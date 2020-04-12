@@ -31,7 +31,7 @@ class Reminder(StoreItem):
         self._reminder_time = self._validate_time(reminder_time)
 
     def _validate_time(self, reminder_time=None):
-        if not reminder_time or type(reminder_time) != str:
+        if not reminder_time or not isinstance(reminder_time, str):
             return reminder_time
         try:
             ptime = None
