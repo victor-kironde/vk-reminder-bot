@@ -1,17 +1,15 @@
+from typing import Dict
 from botbuilder.core import (
     ActivityHandler,
     ConversationState,
     UserState,
     TurnContext,
-    MessageFactory,
 )
 from botbuilder.dialogs import Dialog
-from helpers import DialogHelper, ReminderHelper
-from data_models import WelcomeUserState, ReminderLog
+from helpers import DialogHelper
+from data_models import WelcomeUserState
 
 from botbuilder.schema import Activity, ConversationReference
-
-from typing import Dict
 
 
 class ReminderBot(ActivityHandler):

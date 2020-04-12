@@ -34,7 +34,6 @@ class Reminder(StoreItem):
         if not reminder_time or type(reminder_time) != str:
             return reminder_time
         try:
-            time_format = "%Y-%m-%d %I:%M %p"
             ptime = None
             if ":" in reminder_time and reminder_time.index(":") == 2:
                 t = reminder_time.split(":")
