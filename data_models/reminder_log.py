@@ -1,10 +1,4 @@
-import time
-import uuid
-from datetime import datetime
-from typing import List
 from botbuilder.core import StoreItem
-
-import heapq
 
 
 class ReminderLog(StoreItem):
