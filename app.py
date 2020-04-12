@@ -114,8 +114,6 @@ APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
-        # reminder_thread = threading.Thread(target=run_reminder, daemon=True)
-        # reminder_thread.start()
         web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error
