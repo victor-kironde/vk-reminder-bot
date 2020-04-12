@@ -30,15 +30,6 @@ SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 
 
-def run_reminder():
-    print("clock started ....")
-    url = CONFIG.APP_HOST_NAME
-    while True:
-        print("running reminder... ")
-        requests.get(f"{url}/api/notify")
-        time.sleep(1)
-
-
 async def on_error(context: TurnContext, error: Exception):
     print(f"\n [on_turn_error] unhandled error: {error}")
     traceback.print_exc()
@@ -78,7 +69,9 @@ ACCESSOR = USER_STATE.create_property("RemindersState")
 DIALOG = RemindersDialog(USER_STATE, CONVERSATION_STATE, ACCESSOR)
 CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
 
-BOT = ReminderBot(CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES)
+BOT = ReminderBot(
+    CONVERSATION_STATE, USER_STATE, DIALOG, CONVERSATION_REFERENCES, ACCESSOR
+)
 
 
 async def messages(req: Request) -> Response:
@@ -121,8 +114,8 @@ APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
-        reminder_thread = threading.Thread(target=run_reminder, daemon=True)
-        reminder_thread.start()
+        # reminder_thread = threading.Thread(target=run_reminder, daemon=True)
+        # reminder_thread.start()
         web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error
