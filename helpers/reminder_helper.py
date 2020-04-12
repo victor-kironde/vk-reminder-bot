@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 from botbuilder.core import TurnContext, CardFactory
 from resources import SnoozeCard
 from data_models import ReminderLog
@@ -9,7 +10,9 @@ class ReminderHelper:
     @staticmethod
     async def remind_user(turn_context: TurnContext, accessor):
         reminder_log = await accessor.get(turn_context, ReminderLog)
-        now = datetime.strftime(datetime.now(), "%Y-%m-%d %I:%M")
+        timezone = pytz.timezone("Africa/Nairobi")
+        now_local = timezone.localize(datetime.now())
+        now = datetime.strftime(now_local, "%Y-%m-%d %I:%M")
         if len(reminder_log.new_reminders) > 0:
             reminder_time = datetime.strftime(
                 sorted(reminder_log.new_reminders)[0].reminder_time, "%Y-%m-%d %I:%M %p"
