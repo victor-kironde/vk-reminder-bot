@@ -34,6 +34,7 @@ def run_reminder():
     print("clock started ....")
     url = CONFIG.APP_HOST_NAME
     while True:
+        print("running reminder... ")
         requests.get(f"{url}/api/notify")
         time.sleep(1)
 
