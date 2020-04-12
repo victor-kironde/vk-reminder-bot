@@ -12,7 +12,7 @@
 - Run `python app.py`
 
 ## Running the Bot Online
-- You can test the bot online [here](https://webchat.botframework.com/embed/vk-reminder-bot?s=iQV5Xkjb1Ns.HJAcELqMEbq73-rdAwPze8ZauO___9Ij030uuUzAPCk).
+- You can test the bot online [here](https://webchat.botframework.com/embed/vk_reminder_bot?s=376s13dNyqs.-TOrhd3zlpXJz3EbzDuI55FTd-g89O01aXutuIpCIpI).
 
 
 ## Running the bot using Bot Framework Emulator
