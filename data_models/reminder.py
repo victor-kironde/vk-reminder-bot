@@ -22,16 +22,6 @@ class Reminder(StoreItem):
     def __lt__(self, other):
         return self.reminder_time > other.reminder_time
 
-    # @property
-    # def datetime(self):
-    #     """
-    #     get reminder datetime
-    #     """
-    #     parsed_dt = datetime.strptime(self.reminder_time, "%Y-%m-%d %I:%M %p")
-    #     timezone = pytz.timezone("Africa/Nairobi")
-    #     local_time = timezone.localize(parsed_dt)
-    #     return local_time
-
     @property
     def reminder_time(self):
         return self._reminder_time
