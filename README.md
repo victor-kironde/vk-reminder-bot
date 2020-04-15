@@ -8,6 +8,8 @@
   - Install Python 3.6
 
 ## Running the Bot Locally
+- Clone this repository
+- Set `DEBUG=True` in `config.py`. This will make bot state use `MemoryStorage`
 - Run `pip install -r requirements.txt` to install all dependencies
 - Run `python app.py`
 
