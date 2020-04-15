@@ -12,7 +12,7 @@ class ReminderHelper:
     async def remind_user(turn_context: TurnContext, accessor):
         reminder_log = await accessor.get(turn_context, ReminderLog)
         timezone = pytz.timezone("Africa/Nairobi")
-        now_local = timezone.localize(datetime.now())
+        now_local = datetime.now().astimezone(timezone)
         now = datetime.strftime(now_local, "%Y-%m-%d %I:%M")
         if len(reminder_log.new_reminders) > 0:
             reminder_time = datetime.strftime(
