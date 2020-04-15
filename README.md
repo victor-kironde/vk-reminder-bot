@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-  - Install Python 3.6
+  - Install Python 3.8
 
 ## Running the Bot Locally
 - Run `pip install -r requirements.txt` to install all dependencies
