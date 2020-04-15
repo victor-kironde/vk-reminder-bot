@@ -5,7 +5,7 @@
 
 ## Prerequisites
 
-  - Install Python 3.6
+  - Install Python 3.8
 
 ## Running the Bot Locally
 - Clone this repository
