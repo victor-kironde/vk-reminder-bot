@@ -66,7 +66,6 @@ class ReminderBot(ActivityHandler):
                 await self._welcome_user(turn_context)
 
     async def on_conversation_update_activity(self, turn_context):
-        await ReminderHelper.remind_user(turn_context, self.accessor)
         self._add_conversation_reference(turn_context.activity)
         return await super().on_conversation_update_activity(turn_context)
 

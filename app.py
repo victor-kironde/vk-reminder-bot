@@ -104,6 +104,12 @@ async def _send_proactive_message():
         )
 
 
+def trigger_reminder():
+    while True:
+        requests.get(f"{CONFIG.APP_HOST_NAME}/api/notify")
+        time.sleep(1)
+
+
 async def start_reminder(turn_context):
     return await ReminderHelper.remind_user(turn_context, ACCESSOR)
 
@@ -114,6 +120,7 @@ APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
+        threading.Thread(target=trigger_reminder).start()
         web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error
