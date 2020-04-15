@@ -1,5 +1,6 @@
 import threading
 import traceback
+import asyncio
 import uuid
 import time
 from datetime import datetime
@@ -106,7 +107,7 @@ async def _send_proactive_message():
 
 def trigger_reminder():
     while True:
-        requests.get(f"{CONFIG.APP_HOST_NAME}/api/notify")
+        asyncio.run(_send_proactive_message())
         time.sleep(1)
 
 
@@ -116,7 +117,6 @@ async def start_reminder(turn_context):
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
-APP.router.add_get("/api/notify", notify)
 
 if __name__ == "__main__":
     try:
