@@ -165,7 +165,6 @@ class RemindersDialog(CancelAndHelpDialog):
             step_context.context, ReminderLog
         )
         reminder_log.new_reminders.append(reminder)
-        await self.reminders_accessor.set(step_context.context, reminder_log)
 
     async def _show_reminders(self, turn_context: TurnContext):
         reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
