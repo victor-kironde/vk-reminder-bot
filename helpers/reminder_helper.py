@@ -1,8 +1,7 @@
 from datetime import datetime
 import pytz
-import asyncio
 from botbuilder.core import TurnContext, CardFactory
-from resources import SnoozeCard
+from resources import Cards
 from data_models import ReminderLog
 from botbuilder.schema import ActivityTypes, Activity
 
@@ -21,20 +20,10 @@ class ReminderHelper:
             )
             if now in reminder_time:
                 reminder = reminder_log.new_reminders.pop(0)
-                SnoozeCard["body"][0]["columns"][0]["items"][0]["text"] = (
-                    reminder.title if hasattr(reminder, "title") else ""
-                )
-                SnoozeCard["body"][0]["columns"][0]["items"][1]["text"] = (
-                    datetime.strftime(reminder.reminder_time, "%Y-%m-%d %I:%M %p")
-                    if hasattr(reminder, "reminder_time")
-                    else ""
-                )
-                SnoozeCard["actions"][0]["data"]["reminder_id"] = reminder.id
-                SnoozeCard["actions"][1]["data"]["reminder_id"] = reminder.id
-
+                snooze_card = Cards.snooze_card(reminder)
                 message = Activity(
                     type=ActivityTypes.message,
-                    attachments=[CardFactory.adaptive_card(SnoozeCard)],
+                    attachments=[CardFactory.adaptive_card(snooze_card)],
                 )
                 reminder.done = True
                 reminder_log.old_reminders.append(reminder)

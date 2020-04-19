@@ -1,0 +1,11 @@
+class Messages:
+    help = "How can I help you?"
+    hello = "Hello!"
+    welcome = "Welcome {name}! I'm VK-Reminder-Bot."
+    done = "I have set the reminder!"
+    missed = "I didn't get that!"
+    get_title = "Please enter Reminder Title:"
+    get_time = "When should I remind you?"
+    time_retry = "Please enter a valid time:"
+    bad_time = "Can't set reminders in the past, Reminder discarded."
+    no_reminders = "You don't have any reminders!"

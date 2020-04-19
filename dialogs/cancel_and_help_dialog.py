@@ -9,7 +9,7 @@ from botbuilder.dialogs import (
 )
 from botbuilder.schema import Activity, ActivityTypes, InputHints
 from botbuilder.core import MessageFactory, CardFactory
-from resources import HelpCard
+from resources import Cards
 
 
 class CancelAndHelpDialog(ComponentDialog):
@@ -28,7 +28,7 @@ class CancelAndHelpDialog(ComponentDialog):
             text = inner_dc.context.activity.text.lower()
             help_message = Activity(
                 type=ActivityTypes.message,
-                attachments=[CardFactory.adaptive_card(HelpCard)],
+                attachments=[CardFactory.adaptive_card(Cards.help_card)],
             )
 
             if text in ("help", "?"):
