@@ -28,7 +28,7 @@ from botbuilder.schema import (
 )
 from data_models import Reminder, ActivityMappingState, ReminderLog
 from config import DefaultConfig
-from resources import HelpCard, ReminderCard
+from resources import Cards
 
 from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOptions
 from helpers import LuisHelper, Intent, Messages
@@ -104,7 +104,7 @@ class RemindersDialog(CancelAndHelpDialog):
         elif intent == Intent.HELP.value:
             message = Activity(
                 type=ActivityTypes.message,
-                attachments=[CardFactory.adaptive_card(HelpCard)],
+                attachments=[CardFactory.adaptive_card(Cards.help_card())],
             )
             await step_context.context.send_activity(message)
             return await step_context.end_dialog()
@@ -155,16 +155,11 @@ class RemindersDialog(CancelAndHelpDialog):
             await step_context.context.send_activity(Messages.bad_time)
             return await step_context.end_dialog()
         await step_context.context.send_activity(Messages.done)
-
-        ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = datetime.strftime(
-            reminder.reminder_time, "%Y-%m-%d %I:%M %p"
-        )
-
+        reminder_card = Cards.reminder_card(reminder)
         await step_context.context.send_activity(
             Activity(
                 type=ActivityTypes.message,
-                attachments=[CardFactory.adaptive_card(ReminderCard)],
+                attachments=[CardFactory.adaptive_card(reminder_card)],
             )
         )
         await self._save_reminder(step_context)
@@ -185,18 +180,10 @@ class RemindersDialog(CancelAndHelpDialog):
             turn_context, ActivityMappingState
         )
         for reminder in reminder_list:
-            ReminderCard["body"][0]["text"] = (
-                reminder.title if hasattr(reminder, "title") else ""
-            )
-            ReminderCard["body"][1]["text"] = (
-                datetime.strftime(reminder.reminder_time, "%Y-%m-%d %I:%M %p")
-                if hasattr(reminder, "reminder_time")
-                else ""
-            )
-            ReminderCard["actions"][0]["data"]["reminder_id"] = reminder.id
+            reminder_card = Cards.reminder_card(reminder)
             message = Activity(
                 type=ActivityTypes.message,
-                attachments=[CardFactory.adaptive_card(ReminderCard)],
+                attachments=[CardFactory.adaptive_card(reminder_card)],
             )
             sent_activity = await turn_context.send_activity(message)
             activity_mapping_state.activities[reminder.id] = sent_activity.id
@@ -213,19 +200,11 @@ class RemindersDialog(CancelAndHelpDialog):
         reminder_log.new_reminders.append(new_reminder)
 
         await turn_context.send_activity(Messages.done)
-
+        reminder_card = Cards.reminder_card(new_reminder)
         message = Activity(
             type=ActivityTypes.message,
-            attachments=[CardFactory.adaptive_card(ReminderCard)],
+            attachments=[CardFactory.adaptive_card(reminder_card)],
         )
-
-        ReminderCard["body"][0]["text"] = reminder.title
-        ReminderCard["body"][1]["text"] = datetime.strftime(
-            new_reminder.reminder_time, "%Y-%m-%d %I:%M %p"
-        )
-        ReminderCard["actions"][0]["data"]["reminder_id"] = new_reminder.id
-        ReminderCard["actions"][0]["data"]["activity_id"] = new_reminder.id
-
         sent_activity = await turn_context.send_activity(message)
 
         activity_mapping_state = await self.conversation_state_accessor.get(

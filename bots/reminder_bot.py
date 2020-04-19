@@ -4,13 +4,11 @@ from botbuilder.core import (
     ConversationState,
     UserState,
     TurnContext,
-    CardFactory,
 )
 from botbuilder.dialogs import Dialog
 from helpers import DialogHelper, Messages
 from data_models import WelcomeUserState
-from botbuilder.schema import Activity, ConversationReference, ActivityTypes
-from resources import HelpCard
+from botbuilder.schema import Activity, ConversationReference
 
 
 class ReminderBot(ActivityHandler):
