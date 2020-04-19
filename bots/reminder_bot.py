@@ -35,7 +35,6 @@ class ReminderBot(ActivityHandler):
         self.user_welcome_state_accessor = self.user_state.create_property(
             "WelcomeUserState"
         )
-        self.accessor = accessor
         self.conversation_references = conversation_references
 
     async def on_turn(self, turn_context: TurnContext):

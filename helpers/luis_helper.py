@@ -48,7 +48,7 @@ class LuisHelper:
             if intent == Intent.CREATE_REMINDER.value:
                 result = Reminder()
                 reminder_entities = recognizer_result.entities.get("$instance", {}).get(
-                    "Calendar_Message", []
+                    "reminder_title", []
                 )
                 if len(reminder_entities) > 0:
                     result.title = reminder_entities[0]["text"].title()

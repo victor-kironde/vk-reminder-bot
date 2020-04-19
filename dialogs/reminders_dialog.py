@@ -82,7 +82,18 @@ class RemindersDialog(CancelAndHelpDialog):
             self.recognizer, step_context.context
         )
         step_context.values[self.REMINDER] = recognizer_result
-        if intent == Intent.SHOW_REMINDERS.value:
+        text = (
+            step_context.context.activity.text
+            if step_context.context.activity.text
+            else ""
+        ).lower()
+        if intent == Intent.SNOOZE_REMINDER.value:
+            await self._snooze_reminder(step_context.context, recognizer_result)
+            return await step_context.end_dialog()
+        elif text.startswith("delete"):
+            await self._delete_reminder(step_context.context)
+            return await step_context.end_dialog()
+        elif text.startswith("show"):
             await self._show_reminders(step_context.context)
             return await step_context.end_dialog()
 
@@ -96,13 +107,6 @@ class RemindersDialog(CancelAndHelpDialog):
             )
             await step_context.context.send_activity(message)
             return await step_context.end_dialog()
-        elif intent == Intent.SNOOZE_REMINDER.value:
-            await self._snooze_reminder(step_context.context, recognizer_result)
-            return await step_context.end_dialog()
-        elif intent == Intent.DELETE_REMINDER.value:
-            await self._delete_reminder(step_context.context)
-            return await step_context.end_dialog()
-
         else:
             await step_context.context.send_activity("I didn't get that!")
             await self._send_suggested_actions(step_context.context)
@@ -168,7 +172,7 @@ class RemindersDialog(CancelAndHelpDialog):
 
     async def _show_reminders(self, turn_context: TurnContext):
         reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
-        reminder_list = reminder_log.new_reminders
+        reminder_list = reminder_log.new_reminders + reminder_log.old_reminders
 
         activity_mapping_state = await self.conversation_state_accessor.get(
             turn_context, ActivityMappingState
@@ -200,6 +204,7 @@ class RemindersDialog(CancelAndHelpDialog):
         )[0]
 
         new_reminder.title = reminder.title
+        new_reminder.done = False
         reminder_log.new_reminders.append(new_reminder)
 
         await turn_context.send_activity(f"I have updated the reminder!")
@@ -224,7 +229,12 @@ class RemindersDialog(CancelAndHelpDialog):
         activity_mapping_state.activities[reminder.id] = sent_activity.id
 
     async def _delete_reminder(self, turn_context: TurnContext):
-        raise NotImplementedError
+        activity_mapping_state = await self.conversation_state_accessor.get(
+            turn_context, ActivityMappingState
+        )
+        reminder_id = turn_context.activity.text.split()[1]
+        activity_id = activity_mapping_state.activities.get(reminder_id)
+        await turn_context.delete_activity(activity_id)
 
     async def _send_suggested_actions(self, turn_context: TurnContext):
         reply = MessageFactory.text("How can I help you?")
