@@ -31,7 +31,7 @@ from config import DefaultConfig
 from resources import HelpCard, ReminderCard
 
 from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOptions
-from helpers import LuisHelper, Intent
+from helpers import LuisHelper, Intent, Messages
 from .cancel_and_help_dialog import CancelAndHelpDialog
 
 config = DefaultConfig()
@@ -109,7 +109,7 @@ class RemindersDialog(CancelAndHelpDialog):
             await step_context.context.send_activity(message)
             return await step_context.end_dialog()
         else:
-            await step_context.context.send_activity("I didn't get that!")
+            await step_context.context.send_activity(Messages.missed)
             await self._send_suggested_actions(step_context.context)
             return await step_context.end_dialog()
 
@@ -119,7 +119,7 @@ class RemindersDialog(CancelAndHelpDialog):
         reminder = step_context.values[self.REMINDER]
         if not reminder.title:
             prompt_options = PromptOptions(
-                prompt=MessageFactory.text("Please enter Reminder Title:")
+                prompt=MessageFactory.text(Messages.get_title)
             )
 
             return await step_context.prompt(TextPrompt.__name__, prompt_options)
@@ -132,8 +132,8 @@ class RemindersDialog(CancelAndHelpDialog):
             reminder.title = step_context.result.title()
         if not reminder.reminder_time:
             prompt_options = PromptOptions(
-                prompt=MessageFactory.text("When should I remind you?"),
-                retry_prompt=MessageFactory.text("Please enter a valid time:"),
+                prompt=MessageFactory.text(Messages.get_time),
+                retry_prompt=MessageFactory.text(Messages.time_retry),
             )
             return await step_context.prompt(DateTimePrompt.__name__, prompt_options)
         else:
@@ -152,11 +152,9 @@ class RemindersDialog(CancelAndHelpDialog):
         if reminder.reminder_time < datetime.now().astimezone(
             pytz.timezone("Africa/Nairobi")
         ):
-            await step_context.context.send_activity(
-                f"""Can't set reminders in the past, Reminder discarded."""
-            )
+            await step_context.context.send_activity(Messages.bad_time)
             return await step_context.end_dialog()
-        await step_context.context.send_activity(f"""I have set the reminder!""")
+        await step_context.context.send_activity(Messages.done)
 
         ReminderCard["body"][0]["text"] = reminder.title
         ReminderCard["body"][1]["text"] = datetime.strftime(
@@ -203,8 +201,6 @@ class RemindersDialog(CancelAndHelpDialog):
             sent_activity = await turn_context.send_activity(message)
             activity_mapping_state.activities[reminder.id] = sent_activity.id
 
-        print("Mapping_state", activity_mapping_state.activities)
-
     async def _snooze_reminder(self, turn_context: TurnContext, new_reminder):
         reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
         old_reminders = reminder_log.old_reminders
@@ -216,7 +212,7 @@ class RemindersDialog(CancelAndHelpDialog):
         new_reminder.done = False
         reminder_log.new_reminders.append(new_reminder)
 
-        await turn_context.send_activity(f"I have updated the reminder!")
+        await turn_context.send_activity(Messages.done)
 
         message = Activity(
             type=ActivityTypes.message,
@@ -246,7 +242,7 @@ class RemindersDialog(CancelAndHelpDialog):
         await turn_context.delete_activity(activity_id)
 
     async def _send_suggested_actions(self, turn_context: TurnContext):
-        reply = MessageFactory.text("How can I help you?")
+        reply = MessageFactory.text(Messages.help)
 
         reply.suggested_actions = SuggestedActions(
             actions=[
