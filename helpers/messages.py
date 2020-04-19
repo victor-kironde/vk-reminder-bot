@@ -8,3 +8,4 @@ class Messages:
     get_time = "When should I remind you?"
     time_retry = "Please enter a valid time:"
     bad_time = "Can't set reminders in the past, Reminder discarded."
+    no_reminders = "You don't have any reminders!"

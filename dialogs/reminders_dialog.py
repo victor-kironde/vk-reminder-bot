@@ -175,6 +175,8 @@ class RemindersDialog(CancelAndHelpDialog):
     async def _show_reminders(self, turn_context: TurnContext):
         reminder_log = await self.reminders_accessor.get(turn_context, ReminderLog)
         reminder_list = reminder_log.new_reminders + reminder_log.old_reminders
+        if len(reminder_list) == 0:
+            await turn_context.send_activity(Messages.no_reminders)
 
         activity_mapping_state = await self.conversation_state_accessor.get(
             turn_context, ActivityMappingState
