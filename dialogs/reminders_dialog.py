@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 from botbuilder.core import (
     MessageFactory,
     UserState,
@@ -147,6 +148,14 @@ class RemindersDialog(CancelAndHelpDialog):
             if not reminder.reminder_time
             else reminder.reminder_time
         )
+
+        if reminder.reminder_time < datetime.now().astimezone(
+            pytz.timezone("Africa/Nairobi")
+        ):
+            await step_context.context.send_activity(
+                f"""Can't set reminders in the past, Reminder discarded."""
+            )
+            return await step_context.end_dialog()
         await step_context.context.send_activity(f"""I have set the reminder!""")
 
         ReminderCard["body"][0]["text"] = reminder.title
