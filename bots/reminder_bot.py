@@ -4,11 +4,13 @@ from botbuilder.core import (
     ConversationState,
     UserState,
     TurnContext,
+    CardFactory,
 )
 from botbuilder.dialogs import Dialog
-from helpers import DialogHelper, ReminderHelper
+from helpers import DialogHelper
 from data_models import WelcomeUserState
-from botbuilder.schema import Activity, ConversationReference
+from botbuilder.schema import Activity, ConversationReference, ActivityTypes
+from resources import HelpCard
 
 
 class ReminderBot(ActivityHandler):
@@ -76,8 +78,10 @@ class ReminderBot(ActivityHandler):
         if not welcome_user_state.did_welcome_user:
             welcome_user_state.did_welcome_user = True
             name = turn_context.activity.from_property.name
-            await turn_context.send_activity(f"Hello, I'm VK-Reminder-Bot.")
-            await turn_context.send_activity(f"What is your name?")
+            await turn_context.send_activity(f"Welcome {name}! I'm VK-Reminder-Bot.")
+            await turn_context.send_activity(f"How may I help you?")
+        else:
+            await turn_context.send_activity(f"Hello!")
 
     def _add_conversation_reference(self, activity: Activity):
         """
