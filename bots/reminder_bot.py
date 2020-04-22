@@ -82,12 +82,6 @@ class ReminderBot(ActivityHandler):
             await turn_context.send_activity(Messages.hello)
 
     def _add_conversation_reference(self, activity: Activity):
-        """
-        This populates the shared Dictionary that holds conversation references. In this sample,
-        this dictionary is used to send a message to members when /api/notify is hit.
-        :param activity:
-        :return:
-        """
         conversation_reference = TurnContext.get_conversation_reference(activity)
         self.conversation_references[
             conversation_reference.user.id
