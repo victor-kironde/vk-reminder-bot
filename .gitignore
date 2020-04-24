@@ -1,5 +1,4 @@
 **/__pycache__
 .pylintrc
 .vscode
-config.py
-config.py
+.pytest_cache/
