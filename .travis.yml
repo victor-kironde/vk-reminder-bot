@@ -6,6 +6,6 @@ install:
   - pip install pytest-cov
   - pip install coveralls
 script:
-  - pytest
+  - pytest --cov=vk_reminder_bot
 after_success:
   - coveralls
