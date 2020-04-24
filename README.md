@@ -1,3 +1,4 @@
+[![Coverage Status](https://coveralls.io/repos/github/victor-kironde/vk_reminder_bot/badge.svg?branch=master)](https://coveralls.io/github/victor-kironde/vk_reminder_bot?branch=master)
 # VK-Reminder-Bot
 
 #### A Reminder Bot build with the [Microsoft Bot Framework](https://dev.botframework.com).
