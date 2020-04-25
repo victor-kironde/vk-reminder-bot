@@ -201,7 +201,7 @@ class RemindersDialog(CancelAndHelpDialog):
         new_reminder.done = False
         reminder_log.new_reminders.append(new_reminder)
 
-        await turn_context.send_activity(Messages.done)
+        await turn_context.send_activity(Messages.updated)
         reminder_card = Cards.reminder_card(new_reminder)
         message = Activity(
             type=ActivityTypes.message,
