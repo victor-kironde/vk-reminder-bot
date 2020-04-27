@@ -1,5 +1,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/victor-kironde/vk_reminder_bot/badge.svg)](https://coveralls.io/github/victor-kironde/vk_reminder_bot)
 [![Build Status](https://travis-ci.org/victor-kironde/vk_reminder_bot.svg)](https://travis-ci.org/victor-kironde/vk_reminder_bot)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 # VK-Reminder-Bot
 
 #### A Reminder Bot build with the [Microsoft Bot Framework](https://dev.botframework.com).
