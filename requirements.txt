@@ -6,3 +6,4 @@ botbuilder
 botbuilder-azure
 botbuilder-dialogs
 botbuilder-testing
+python-dotenv
