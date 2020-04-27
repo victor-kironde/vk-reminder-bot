@@ -4,7 +4,6 @@ from botbuilder.core import (
     MessageFactory,
     UserState,
     ConversationState,
-    MemoryStorage,
     CardFactory,
     TurnContext,
 )
@@ -27,14 +26,10 @@ from botbuilder.schema import (
     SuggestedActions,
 )
 from data_models import Reminder, ActivityMappingState, ReminderLog
-from config import DefaultConfig
 from resources import Cards
-
-from botbuilder.ai.luis import LuisApplication, LuisRecognizer, LuisPredictionOptions
 from helpers import LuisHelper, Intent, Messages
+from recognizers import ReminderRecognizer
 from .cancel_and_help_dialog import CancelAndHelpDialog
-
-config = DefaultConfig()
 
 
 class RemindersDialog(CancelAndHelpDialog):
@@ -69,14 +64,7 @@ class RemindersDialog(CancelAndHelpDialog):
         )
 
         self.initial_dialog_id = "WFDialog"
-
-        luis_application = LuisApplication(
-            config.LUIS_APP_ID, config.LUIS_API_KEY, config.LUIS_API_HOST_NAME,
-        )
-        luis_options = LuisPredictionOptions(
-            include_all_intents=True, include_instance_data=True
-        )
-        self.recognizer = LuisRecognizer(luis_application, luis_options, True)
+        self.recognizer = ReminderRecognizer()
 
     async def choice_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         intent, recognizer_result = await LuisHelper.execute_luis_query(
@@ -215,12 +203,16 @@ class RemindersDialog(CancelAndHelpDialog):
         activity_mapping_state.activities[reminder.id] = sent_activity.id
 
     async def _delete_reminder(self, turn_context: TurnContext):
-        activity_mapping_state = await self.conversation_state_accessor.get(
-            turn_context, ActivityMappingState
-        )
-        reminder_id = turn_context.activity.text.split()[1]
-        activity_id = activity_mapping_state.activities.get(reminder_id)
-        await turn_context.delete_activity(activity_id)
+        try:
+            activity_mapping_state = await self.conversation_state_accessor.get(
+                turn_context, ActivityMappingState
+            )
+            reminder_id = turn_context.activity.text.split()[1]
+            activity_id = activity_mapping_state.activities.get(reminder_id)
+            await turn_context.delete_activity(activity_id)
+            await turn_context.send_activity("Reminder Deleted Successfully.")
+        except Exception as e:
+            await turn_context.send_activity("Failed to delete Reminder")
 
     async def _send_suggested_actions(self, turn_context: TurnContext):
         reply = MessageFactory.text(Messages.help)
