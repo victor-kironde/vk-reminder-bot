@@ -5,3 +5,5 @@ botbuilder_schema >=4.7.1
 botbuilder
 botbuilder-azure
 botbuilder-dialogs
+botbuilder-testing
+python-dotenv

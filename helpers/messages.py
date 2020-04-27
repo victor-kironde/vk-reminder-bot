@@ -3,6 +3,7 @@ class Messages:
     hello = "Hello!"
     welcome = "Welcome {name}! I'm VK-Reminder-Bot."
     done = "I have set the reminder!"
+    updated = "I have updated the reminder!"
     missed = "I didn't get that!"
     get_title = "Please enter Reminder Title:"
     get_time = "When should I remind you?"

@@ -2,3 +2,4 @@
 .pylintrc
 .vscode
 .pytest_cache/
+.env
