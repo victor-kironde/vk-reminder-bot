@@ -5,12 +5,10 @@ import uuid
 import time
 from datetime import datetime
 from typing import Dict
-import requests
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes, ConversationReference
-from config import DefaultConfig
 from botbuilder.azure import CosmosDbStorage, CosmosDbConfig
 from dialogs import RemindersDialog
 from bots import ReminderBot
@@ -23,6 +21,14 @@ from botbuilder.core import (
     MemoryStorage,
 )
 from helpers import ReminderHelper
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from config import (
+    DefaultConfig,
+)  # For some reason config variables fail to load when this runs before load_dotenv().
 
 CONFIG = DefaultConfig()
 APP_ID = CONFIG.APP_ID if CONFIG.APP_ID else uuid.uuid4()
